@@ -1362,7 +1362,8 @@
 
 <script>
 // ─── STATE ───────────────────────────────────────────────
-let currentHandle = '';
+let currentHandle = "";
+let currentBrandData = null;
 let criteria = [];
 let partners = [];
 
@@ -1468,7 +1469,7 @@ function goTo(screenNum) {
 }
 
 // ─── ANALYZE BRAND ───────────────────────────────────────
-function analyzeBrand() {
+async function analyzeBrand() {
   const handle = document.getElementById('brandHandle').value.trim().replace('@','');
   if(!handle) { document.getElementById('brandHandle').focus(); return; }
   currentHandle = handle;
@@ -1479,6 +1480,8 @@ function analyzeBrand() {
   // Animate loading steps
   const steps = ['ls1','ls2','ls3','ls4','ls5'];
   let i = 0;
+  let apiData = null;
+
   function nextStep() {
     if(i > 0) {
       const prev = document.getElementById(steps[i-1]);
@@ -1489,16 +1492,34 @@ function analyzeBrand() {
       document.getElementById(steps[i]).classList.add('active');
       i++;
       setTimeout(nextStep, 900);
-    } else {
-      setTimeout(() => showBrandStory(handle), 400);
     }
   }
   nextStep();
+
+  // Call Claude API in parallel with animation
+  try {
+    const response = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ handle, criteria })
+    });
+    const result = await response.json();
+    if(result.error) throw new Error(result.error);
+    apiData = result;
+  } catch(err) {
+    console.error('API error, falling back to mock:', err);
+    apiData = null;
+  }
+
+  // Wait for animation to finish then show results
+  const waitTime = Math.max(0, (steps.length * 900) + 400 - 4500);
+  setTimeout(() => showBrandStory(handle, apiData), Math.max(400, waitTime));
 }
 
-function showBrandStory(handle) {
-  const data = getMockBrand(handle);
+function showBrandStory(handle, apiData) {
+  const data = apiData ? apiData.brand : getMockBrand(handle);
 
+  currentBrandData = apiData;
   document.getElementById('brandName').textContent = data.fullName;
   document.getElementById('brandSubtitle').textContent = `Here's what Chichang found about @${handle}`;
   document.getElementById('brandAvatarChar').textContent = data.avatarChar;
@@ -1526,9 +1547,11 @@ function showBrandStory(handle) {
 
 // ─── FIND INFLUENCERS ────────────────────────────────────
 function findInfluencers() {
-  const data = getMockBrand(currentHandle);
-  document.getElementById('inf-brand-name').textContent = data.fullName;
-  renderInfluencers(data.influencers);
+  const data = currentBrandData || getMockBrand(currentHandle);
+  const infs = (currentBrandData && currentBrandData.influencers) ? currentBrandData.influencers : data.influencers;
+  const name = (currentBrandData && currentBrandData.brand) ? currentBrandData.brand.fullName : data.fullName;
+  document.getElementById('inf-brand-name').textContent = name;
+  renderInfluencers(infs);
   goTo(3);
 }
 
