@@ -1244,12 +1244,13 @@
       <div class="page-eyebrow">Influencer Matches</div>
       <h1 class="page-title">Top 3 for <span id="inf-brand-name">Brand</span></h1>
       <p class="page-sub">Scored across niche match, audience fit, engagement quality & collaboration openness.</p>
+      <div id="tierBadgeRow" style="display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap"></div>
 
       <div class="criteria-bar">
         <div class="criteria-label">Filters</div>
         <div class="criteria-chips" id="criteriaChips"></div>
         <div class="add-criteria">
-          <input type="text" id="criteriaInput" placeholder="e.g. Female, 25-35, India, Fashion..." />
+          <input type="text" id="criteriaInput" placeholder="e.g. Female, India, 18-25, Fashion, Hindi..." />
           <button class="btn-add-criteria" onclick="addCriteria()">+ Add</button>
         </div>
       </div>
@@ -1551,6 +1552,23 @@ function findInfluencers() {
   const infs = (currentBrandData && currentBrandData.influencers) ? currentBrandData.influencers : data.influencers;
   const name = (currentBrandData && currentBrandData.brand) ? currentBrandData.brand.fullName : data.fullName;
   document.getElementById('inf-brand-name').textContent = name;
+
+  // Show tier + data source badges
+  const tierRow = document.getElementById('tierBadgeRow');
+  if(tierRow) {
+    const tier = currentBrandData?.tier;
+    const source = currentBrandData?.influencerSource;
+    tierRow.innerHTML = '';
+    if(tier) {
+      tierRow.innerHTML += `<span class="badge badge-gold">🎯 ${tier.label} Tier — ${tier.description}</span>`;
+    }
+    if(source === 'live') {
+      tierRow.innerHTML += `<span class="badge badge-green">✅ Live Instagram Data</span>`;
+    } else {
+      tierRow.innerHTML += `<span class="badge badge-neutral">🧠 AI-Powered Suggestions</span>`;
+    }
+  }
+
   renderInfluencers(infs);
   goTo(3);
 }
@@ -1616,14 +1634,32 @@ function scoreRow(label, value) {
 }
 
 // ─── CRITERIA ────────────────────────────────────────────
-function addCriteria() {
+async function addCriteria() {
   const input = document.getElementById('criteriaInput');
   const val = input.value.trim();
   if(!val) return;
   criteria.push(val);
   input.value = '';
   renderCriteria();
-  // Re-render influencers with updated criteria visual
+
+  // Re-fetch with new criteria applied
+  const tierRow = document.getElementById('tierBadgeRow');
+  if(tierRow) tierRow.innerHTML = '<span class="badge badge-neutral">🔄 Refining matches...</span>';
+
+  try {
+    const response = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ handle: currentHandle, criteria })
+    });
+    const result = await response.json();
+    if(!result.error) {
+      currentBrandData = result;
+      findInfluencers();
+    }
+  } catch(err) {
+    console.error('Criteria refresh error:', err);
+  }
 }
 
 function renderCriteria() {
