@@ -12,54 +12,69 @@ export default async function handler(req, res) {
   const apifyKey = process.env.APIFY_API_KEY;
   if (!anthropicKey) return res.status(500).json({ error: 'Anthropic API key not configured' });
 
-  // ─── HELPER: Run Apify actor and wait for result ───────────────────
-  async function runApifyActor(actorId, input, maxWaitMs = 25000) {
-    const runRes = await fetch(
-      `https://api.apify.com/v2/acts/${actorId}/runs?token=${apifyKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input)
-      }
-    );
-    const runData = await runRes.json();
-    const runId = runData?.data?.id;
-    if (!runId) return null;
+  // ─── HELPER: poll Apify run until done ──────────────────────────────
+  async function runApifyActor(actorId, input, maxWaitMs = 28000) {
+    try {
+      const runRes = await fetch(
+        `https://api.apify.com/v2/acts/${actorId}/runs?token=${apifyKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(input)
+        }
+      );
+      const runData = await runRes.json();
+      const runId = runData?.data?.id;
+      if (!runId) return null;
 
-    const start = Date.now();
-    while (Date.now() - start < maxWaitMs) {
-      await new Promise(r => setTimeout(r, 2500));
-      const statusRes = await fetch(`https://api.apify.com/v2/actor-runs/${runId}?token=${apifyKey}`);
-      const statusData = await statusRes.json();
-      const status = statusData?.data?.status;
-      if (status === 'SUCCEEDED') {
-        const datasetId = statusData?.data?.defaultDatasetId;
-        const resultsRes = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${apifyKey}&limit=20`);
-        return await resultsRes.json();
+      const start = Date.now();
+      while (Date.now() - start < maxWaitMs) {
+        await new Promise(r => setTimeout(r, 2500));
+        const statusRes = await fetch(`https://api.apify.com/v2/actor-runs/${runId}?token=${apifyKey}`);
+        const statusData = await statusRes.json();
+        const status = statusData?.data?.status;
+        if (status === 'SUCCEEDED') {
+          const datasetId = statusData?.data?.defaultDatasetId;
+          const resultsRes = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${apifyKey}&limit=25`);
+          return await resultsRes.json();
+        }
+        if (status === 'FAILED' || status === 'ABORTED') return null;
       }
-      if (status === 'FAILED' || status === 'ABORTED') return null;
+    } catch (err) {
+      console.error('Apify actor error:', err);
     }
     return null;
   }
 
-  // ─── HELPER: Determine influencer size tier from brand followers ────
-  function getInfluencerTier(followerCount) {
-    if (!followerCount || followerCount < 5000) {
-      return { label: 'Nano', min: 500, max: 10000, description: '500–10K followers' };
-    } else if (followerCount < 20000) {
-      return { label: 'Nano-Micro', min: 1000, max: 25000, description: '1K–25K followers' };
-    } else if (followerCount < 75000) {
-      return { label: 'Micro', min: 10000, max: 75000, description: '10K–75K followers' };
-    } else if (followerCount < 250000) {
-      return { label: 'Mid-Tier', min: 50000, max: 250000, description: '50K–250K followers' };
-    } else if (followerCount < 1000000) {
-      return { label: 'Macro', min: 100000, max: 1000000, description: '100K–1M followers' };
-    } else {
-      return { label: 'Mega', min: 500000, max: 50000000, description: '500K+ followers' };
-    }
+  // ─── HELPER: verify a single Instagram profile exists ───────────────
+  async function verifyProfile(username) {
+    try {
+      const results = await runApifyActor('apify~instagram-profile-scraper', {
+        usernames: [username],
+        resultsLimit: 1
+      }, 15000);
+      if (results && results.length > 0 && results[0].username) {
+        return results[0];
+      }
+    } catch (err) {}
+    return null;
   }
 
-  // ─── HELPER: Format follower count ─────────────────────────────────
+  // ─── HELPER: size tier from brand followers ──────────────────────────
+  function getInfluencerTier(followerCount) {
+    if (!followerCount || followerCount < 5000)
+      return { label: 'Nano', min: 500, max: 10000, description: '500–10K followers' };
+    if (followerCount < 20000)
+      return { label: 'Nano-Micro', min: 1000, max: 25000, description: '1K–25K followers' };
+    if (followerCount < 75000)
+      return { label: 'Micro', min: 10000, max: 75000, description: '10K–75K followers' };
+    if (followerCount < 250000)
+      return { label: 'Mid-Tier', min: 50000, max: 250000, description: '50K–250K followers' };
+    if (followerCount < 1000000)
+      return { label: 'Macro', min: 100000, max: 1000000, description: '100K–1M followers' };
+    return { label: 'Mega', min: 500000, max: 50000000, description: '500K+ followers' };
+  }
+
   function formatFollowers(n) {
     if (!n) return 'unknown';
     if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
@@ -67,9 +82,10 @@ export default async function handler(req, res) {
     return n.toString();
   }
 
-  // ─── STEP 1: Fetch brand Instagram profile ─────────────────────────
+  // ─── STEP 1: Fetch brand profile from Instagram ──────────────────────
   let brandProfile = null;
   let brandHashtags = [];
+  let brandNiche = '';
 
   if (apifyKey) {
     try {
@@ -80,176 +96,257 @@ export default async function handler(req, res) {
 
       if (results && results.length > 0) {
         brandProfile = results[0];
-
-        // Extract hashtags from recent post captions
         const posts = brandProfile.latestPosts || [];
         const hashtagSet = new Set();
         posts.forEach(post => {
-          const caption = post.caption || '';
-          const tags = caption.match(/#\w+/g) || [];
+          const tags = (post.caption || '').match(/#\w+/g) || [];
           tags.forEach(t => hashtagSet.add(t.toLowerCase().replace('#', '')));
         });
-        brandHashtags = Array.from(hashtagSet).slice(0, 5);
+        brandHashtags = Array.from(hashtagSet).slice(0, 6);
+        brandNiche = brandProfile.businessCategoryName || '';
       }
     } catch (err) {
-      console.error('Apify brand fetch error:', err);
+      console.error('Brand profile error:', err);
     }
   }
 
-  // ─── STEP 2: Determine influencer size tier ────────────────────────
   const followerCount = brandProfile?.followersCount || 0;
   const tier = getInfluencerTier(followerCount);
 
-  // ─── STEP 3: Search for real influencer candidates via hashtags ─────
-  let influencerCandidates = [];
+  // ─── STEP 2: Build search keywords from brand + criteria ─────────────
+  // Ask Claude to generate niche search keywords first
+  let searchKeywords = [];
+  try {
+    const kwRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': anthropicKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 200,
+        messages: [{
+          role: 'user',
+          content: `Brand: @${handle}
+Bio: ${brandProfile?.biography || 'unknown'}
+Category: ${brandNiche}
+Hashtags used: ${brandHashtags.join(', ')}
+User criteria: ${criteria && criteria.length > 0 ? criteria.join(', ') : 'none'}
 
-  if (apifyKey && brandHashtags.length > 0) {
+Generate 4 short Instagram search keywords to find micro-influencers who would be a good fit for this brand.
+Respond ONLY with a JSON array of strings. Example: ["fitness india", "yoga lifestyle", "healthy food blogger", "wellness creator"]
+Consider the user criteria when choosing keywords (e.g. if criteria says India, include India in keywords).`
+        }]
+      })
+    });
+    const kwData = await kwRes.json();
+    const kwText = kwData.content[0].text.trim().replace(/```json|```/g, '').trim();
+    searchKeywords = JSON.parse(kwText);
+  } catch (err) {
+    // Fallback keywords from hashtags
+    searchKeywords = brandHashtags.slice(0, 3).map(h => h + ' creator');
+    if (searchKeywords.length === 0) searchKeywords = [handle + ' niche influencer'];
+  }
+
+  // ─── STEP 3: Search Instagram for real creators by keyword ───────────
+  let realCandidates = [];
+
+  if (apifyKey && searchKeywords.length > 0) {
     try {
-      // Search top 3 hashtags for active creators
-      const searchTags = brandHashtags.slice(0, 3);
-      const hashtagResults = await runApifyActor('apify~instagram-hashtag-scraper', {
-        hashtags: searchTags,
-        resultsLimit: 30
-      }, 25000);
+      // Use Instagram search scraper to find real accounts by keyword
+      const searchResults = await runApifyActor('apify~instagram-search-scraper', {
+        searchQueries: searchKeywords.slice(0, 3),
+        searchType: 'user',
+        maxResults: 20
+      }, 28000);
 
-      if (hashtagResults && hashtagResults.length > 0) {
-        // Collect unique creator handles from hashtag posts
-        const creatorHandles = new Set();
-        hashtagResults.forEach(post => {
-          if (post.ownerUsername && post.ownerUsername !== handle) {
-            creatorHandles.add(post.ownerUsername);
-          }
-        });
+      if (searchResults && searchResults.length > 0) {
+        // Filter to profiles within size tier, exclude the brand itself
+        const candidates = searchResults
+          .filter(p => {
+            const f = p.followersCount || 0;
+            return (
+              p.username !== handle &&
+              f >= tier.min &&
+              f <= tier.max &&
+              p.username &&
+              !p.isPrivate
+            );
+          })
+          .map(p => {
+            const avgLikes = p.avgLikes || 0;
+            const avgComments = p.avgComments || 0;
+            const followers = p.followersCount || 1;
+            const engRate = followers > 0
+              ? ((avgLikes + avgComments) / followers * 100).toFixed(2)
+              : '0';
+            return {
+              username: p.username,
+              fullName: p.fullName || p.username,
+              followers: p.followersCount,
+              followersFormatted: formatFollowers(p.followersCount),
+              bio: p.biography || '',
+              engagementRate: engRate + '%',
+              avgLikes,
+              avgComments,
+              verified: p.verified || false,
+              category: p.businessCategoryName || '',
+              website: p.externalUrl || '',
+              profileUrl: `https://instagram.com/${p.username}`
+            };
+          });
 
-        // Fetch profiles for top creators
-        const handleList = Array.from(creatorHandles).slice(0, 10);
-        if (handleList.length > 0) {
-          const profileResults = await runApifyActor('apify~instagram-profile-scraper', {
-            usernames: handleList,
-            resultsLimit: 1
-          }, 25000);
-
-          if (profileResults && profileResults.length > 0) {
-            // Filter by size tier
-            influencerCandidates = profileResults
-              .filter(p => {
-                const f = p.followersCount || 0;
-                return f >= tier.min && f <= tier.max;
-              })
-              .map(p => {
-                const avgLikes = p.avgLikes || 0;
-                const avgComments = p.avgComments || 0;
-                const followers = p.followersCount || 1;
-                const engRate = ((avgLikes + avgComments) / followers * 100).toFixed(2);
-                return {
-                  handle: p.username,
-                  fullName: p.fullName || p.username,
-                  followers: p.followersCount,
-                  followersFormatted: formatFollowers(p.followersCount),
-                  bio: p.biography || '',
-                  engagementRate: engRate + '%',
-                  avgLikes,
-                  avgComments,
-                  verified: p.verified || false,
-                  category: p.businessCategoryName || '',
-                  website: p.externalUrl || ''
-                };
-              })
-              .slice(0, 8);
-          }
-        }
+        // Deduplicate by username
+        const seen = new Set();
+        realCandidates = candidates.filter(c => {
+          if (seen.has(c.username)) return false;
+          seen.add(c.username);
+          return true;
+        }).slice(0, 10);
       }
     } catch (err) {
-      console.error('Apify influencer search error:', err);
+      console.error('Instagram search error:', err);
     }
   }
 
-  // ─── STEP 4: Build Claude prompt with all real data ─────────────────
-  let brandContext = '';
-  if (brandProfile) {
-    const engRate = followerCount && brandProfile.avgLikes
-      ? ((brandProfile.avgLikes + (brandProfile.avgComments || 0)) / followerCount * 100).toFixed(2) + '%'
-      : 'unknown';
+  // ─── STEP 4: Option B safety net — verify any AI suggestions ─────────
+  // If we didn't find enough real candidates, ask Claude for suggestions
+  // then verify each one actually exists on Instagram before showing
+  let verifiedFallbacks = [];
 
-    brandContext = `REAL BRAND DATA (live from Instagram):
+  if (realCandidates.length < 3 && apifyKey) {
+    try {
+      const suggestRes = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': anthropicKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 300,
+          messages: [{
+            role: 'user',
+            content: `Brand: @${handle} — ${brandProfile?.biography || ''}
+Niche: ${brandNiche}
+Criteria: ${criteria && criteria.length > 0 ? criteria.join(', ') : 'none'}
+Influencer size: ${tier.description}
+
+Suggest 6 real Instagram micro-influencer handles (just the username, no @) who would genuinely fit this brand.
+Only suggest handles you are highly confident actually exist on Instagram.
+Respond ONLY with a JSON array: ["handle1", "handle2", "handle3", "handle4", "handle5", "handle6"]`
+          }]
+        })
+      });
+      const suggestData = await suggestRes.json();
+      const suggestText = suggestData.content[0].text.trim().replace(/```json|```/g, '').trim();
+      const suggestedHandles = JSON.parse(suggestText);
+
+      // Verify each suggested handle actually exists — Option B safety net
+      for (const suggestedHandle of suggestedHandles.slice(0, 6)) {
+        if (realCandidates.length + verifiedFallbacks.length >= 8) break;
+        const profile = await verifyProfile(suggestedHandle);
+        if (profile && profile.username) {
+          const f = profile.followersCount || 0;
+          const avgLikes = profile.avgLikes || 0;
+          const avgComments = profile.avgComments || 0;
+          const engRate = f > 0 ? ((avgLikes + avgComments) / f * 100).toFixed(2) : '0';
+          verifiedFallbacks.push({
+            username: profile.username,
+            fullName: profile.fullName || profile.username,
+            followers: f,
+            followersFormatted: formatFollowers(f),
+            bio: profile.biography || '',
+            engagementRate: engRate + '%',
+            avgLikes,
+            avgComments,
+            verified: profile.verified || false,
+            category: profile.businessCategoryName || '',
+            website: profile.externalUrl || '',
+            profileUrl: `https://instagram.com/${profile.username}`
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Verification fallback error:', err);
+    }
+  }
+
+  // Merge real candidates + verified fallbacks
+  const allCandidates = [...realCandidates, ...verifiedFallbacks].slice(0, 10);
+
+  // ─── STEP 5: Ask Claude to score and rank the real candidates ─────────
+  let brandContext = brandProfile ? `
+REAL BRAND DATA:
 - Handle: @${handle}
-- Full Name: ${brandProfile.fullName || handle}
-- Followers: ${formatFollowers(followerCount)} (${followerCount.toLocaleString()} exact)
+- Name: ${brandProfile.fullName || handle}
+- Followers: ${formatFollowers(followerCount)}
 - Bio: ${brandProfile.biography || 'N/A'}
-- Category: ${brandProfile.businessCategoryName || 'N/A'}
-- Website: ${brandProfile.externalUrl || 'N/A'}
-- Verified: ${brandProfile.verified ? 'Yes' : 'No'}
-- Avg Likes/post: ${brandProfile.avgLikes?.toLocaleString() || 'N/A'}
-- Engagement Rate: ${engRate}
-- Top Hashtags used: ${brandHashtags.join(', ') || 'N/A'}`;
-  } else {
-    brandContext = `No live data available. Use training knowledge for @${handle}.`;
-  }
+- Category: ${brandNiche || 'N/A'}
+- Engagement Rate: ${followerCount && brandProfile.avgLikes ? ((brandProfile.avgLikes / followerCount) * 100).toFixed(2) + '%' : 'N/A'}
+- Top Hashtags: ${brandHashtags.join(', ') || 'N/A'}` :
+  `No live data. Use training knowledge for @${handle}.`;
 
-  let candidatesContext = '';
-  if (influencerCandidates.length > 0) {
-    candidatesContext = `\nREAL INFLUENCER CANDIDATES found on Instagram (active in brand's hashtags, sized for this brand):
-${influencerCandidates.map((c, i) => `
-Candidate ${i+1}: @${c.handle}
-- Name: ${c.fullName}
-- Followers: ${c.followersFormatted}
-- Engagement Rate: ${c.engagementRate}
-- Bio: ${c.bio}
-- Category: ${c.category}
-- Website: ${c.website}
-`).join('')}
-You MUST select your top 3 from these real candidates. Do not invent influencers when real candidates are provided.`;
-  } else {
-    candidatesContext = `\nNo live influencer candidates found. Use your knowledge to suggest real micro-influencers in this niche with ${tier.description} followers.`;
-  }
+  let candidatesContext = allCandidates.length > 0 ? `
+REAL VERIFIED INSTAGRAM CANDIDATES (select top 3 from these only):
+${allCandidates.map((c, i) => `
+${i+1}. @${c.username} — ${c.fullName}
+   Followers: ${c.followersFormatted} | Engagement: ${c.engagementRate}
+   Bio: ${c.bio}
+   Category: ${c.category}
+   Website: ${c.website}`).join('')}
+
+IMPORTANT: Only pick from these verified candidates. Do NOT invent any new handles.` :
+  `No verified candidates found. Suggest 3 real micro-influencers for this niche with ${tier.description} followers. Only suggest handles you are certain exist.`;
 
   const criteriaText = criteria && criteria.length > 0
-    ? `\nUSER FILTERS (must match): ${criteria.join(', ')}`
-    : '';
+    ? `\nUSER FILTERS (apply strictly): ${criteria.join(', ')}` : '';
 
-  const prompt = `You are Chichang, an influencer marketing intelligence engine specialising in micro-influencer matching for small brands.
+  const prompt = `You are Chichang, an influencer matching engine for small brands.
 
 ${brandContext}
 ${candidatesContext}
 ${criteriaText}
 
-INFLUENCER SIZE RULE: This brand has ${formatFollowers(followerCount)} followers. You must ONLY recommend influencers in the ${tier.label} tier (${tier.description}). Do not suggest anyone outside this range. Small brands need authentic, affordable, right-sized influencers — not celebrities.
+SIZE RULE: Only recommend influencers with ${tier.description}. This brand has ${formatFollowers(followerCount)} followers — they need right-sized, affordable, authentic partners.
 
-Generate a brand analysis and select the top 3 best-fit influencers. Respond ONLY with valid JSON, no markdown:
+Pick the best 3 and return ONLY valid JSON:
 
 {
   "brand": {
-    "fullName": "Brand name",
+    "fullName": "brand name",
     "handle": "@${handle}",
-    "avatarChar": "First letter uppercase",
-    "sells": "What they sell in 1-2 sentences",
-    "audience": "Target audience — age, gender, interests, lifestyle",
-    "tone": "Brand tone and content style",
-    "market": "Geographic market and distribution",
+    "avatarChar": "first letter uppercase",
+    "sells": "what they sell",
+    "audience": "target audience",
+    "tone": "brand tone",
+    "market": "market and geography",
     "story": "2-3 sentence brand story",
     "followers": "${formatFollowers(followerCount) || 'unknown'}",
     "engagement": "engagement rate",
-    "posts": "posts per week as number",
-    "content": "Primary format e.g. Reels",
-    "badges": ["Category", "Style", "Market"],
-    "influencerTier": "${tier.label} (${tier.description})"
+    "posts": "posts per week",
+    "content": "content type",
+    "badges": ["badge1", "badge2", "badge3"]
   },
   "influencers": [
     {
-      "name": "Full name",
-      "handle": "@handle",
-      "followers": "formatted e.g. 12K",
-      "avatar": "single emoji",
+      "name": "full name",
+      "handle": "@exacthandle",
+      "followers": "formatted",
+      "avatar": "emoji",
       "niche": 9,
       "audience": 8,
       "engagement": 9,
       "openness": 8,
-      "reason": "2 sentences — why great match for this specific brand, referencing their bio/content if real data available",
+      "reason": "2 sentences on why great match",
       "badges": ["Region", "Niche", "Signal"]
     },
     {
-      "name": "Full name",
-      "handle": "@handle",
+      "name": "full name",
+      "handle": "@exacthandle",
       "followers": "formatted",
       "avatar": "emoji",
       "niche": 8,
@@ -260,8 +357,8 @@ Generate a brand analysis and select the top 3 best-fit influencers. Respond ONL
       "badges": ["Region", "Niche", "Signal"]
     },
     {
-      "name": "Full name",
-      "handle": "@handle",
+      "name": "full name",
+      "handle": "@exacthandle",
       "followers": "formatted",
       "avatar": "emoji",
       "niche": 7,
@@ -272,9 +369,7 @@ Generate a brand analysis and select the top 3 best-fit influencers. Respond ONL
       "badges": ["Region", "Niche", "Signal"]
     }
   ]
-}
-
-Scoring rules: integers 1-10. If real candidates provided, pick from them. Apply all user filters strictly.`;
+}`;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -299,12 +394,13 @@ Scoring rules: integers 1-10. If real candidates provided, pick from them. Apply
     const parsed = JSON.parse(clean);
 
     parsed.dataSource = brandProfile ? 'live' : 'ai';
-    parsed.influencerSource = influencerCandidates.length > 0 ? 'live' : 'ai';
+    parsed.influencerSource = allCandidates.length > 0 ? 'live' : 'ai';
     parsed.tier = tier;
+    parsed.searchKeywords = searchKeywords;
 
     return res.status(200).json(parsed);
   } catch (err) {
-    console.error('Claude error:', err);
-    return res.status(500).json({ error: 'Failed to analyze brand. Please try again.' });
+    console.error('Claude scoring error:', err);
+    return res.status(500).json({ error: 'Failed to analyze. Please try again.' });
   }
 }
