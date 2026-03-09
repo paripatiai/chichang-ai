@@ -4,28 +4,31 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Chichang.ai — Influencer Intelligence</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #0f0f0f;
-    --ink-soft: #4a4a4a;
-    --ink-muted: #9a9a9a;
-    --paper: #fafaf8;
-    --paper-warm: #f4f2ed;
-    --gold: #c8a951;
-    --gold-light: #f0e4bb;
-    --gold-dark: #a88a38;
-    --line: #e8e4dc;
-    --green: #2d6a4f;
-    --green-light: #d8f3dc;
-    --red-light: #ffe8e8;
-    --red: #c0392b;
+    --ink: #1a1a2e;
+    --ink-soft: #4a4a6a;
+    --ink-muted: #8a8aaa;
+    --paper: #ffffff;
+    --paper-warm: #f6f6f7;
+    --gold: #008060;
+    --gold-light: #d4edda;
+    --gold-dark: #004c3f;
+    --line: #e3e5e8;
+    --green: #008060;
+    --green-light: #d4edda;
+    --red-light: #fff4f4;
+    --red: #d82c0d;
+    --purple: #5c6ac4;
+    --purple-light: #f0f1ff;
+    --instagram: #e1306c;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     background: var(--paper);
     color: var(--ink);
     min-height: 100vh;
@@ -41,7 +44,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 20px 48px;
-    background: rgba(250,250,248,0.92);
+    background: rgba(255,255,255,0.96);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--line);
   }
@@ -53,7 +56,7 @@
   }
 
   .logo-text {
-    font-family: 'DM Serif Display', serif;
+    font-family: 'Playfair Display', serif;
     font-size: 22px;
     color: var(--ink);
     letter-spacing: -0.5px;
@@ -107,7 +110,7 @@
   }
 
   .step.done .step-num {
-    background: var(--gold);
+    background: linear-gradient(90deg, var(--gold), #00a67e);
     border-color: var(--gold);
     color: white;
   }
@@ -157,16 +160,16 @@
 
   .hero-eyebrow {
     font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 3px;
+    font-weight: 600;
+    letter-spacing: 2px;
     text-transform: uppercase;
-    color: var(--gold);
+    color: var(--purple);
     margin-bottom: 24px;
   }
 
   .hero-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(42px, 6vw, 72px);
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(38px, 5vw, 64px);
     line-height: 1.1;
     letter-spacing: -1px;
     color: var(--ink);
@@ -193,12 +196,12 @@
     align-items: center;
     gap: 0;
     width: 100%;
-    max-width: 520px;
+    max-width: 540px;
     background: white;
-    border: 1.5px solid var(--line);
-    border-radius: 4px;
+    border: 2px solid var(--line);
+    border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
     transition: border-color 0.2s, box-shadow 0.2s;
   }
 
@@ -233,19 +236,19 @@
   #brandHandle::placeholder { color: var(--ink-muted); font-weight: 300; }
 
   .btn-analyze {
-    background: var(--ink);
+    background: var(--gold);
     color: white;
     border: none;
     padding: 0 28px;
     height: 58px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 13px;
     font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
+    letter-spacing: 0.3px;
     cursor: pointer;
     transition: background 0.2s;
     white-space: nowrap;
+    border-radius: 0 6px 6px 0;
   }
 
   .btn-analyze:hover { background: var(--gold-dark); }
@@ -371,15 +374,15 @@
 
   .page-eyebrow {
     font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 3px;
+    font-weight: 600;
+    letter-spacing: 2px;
     text-transform: uppercase;
-    color: var(--gold);
+    color: var(--purple);
     margin-bottom: 12px;
   }
 
   .page-title {
-    font-family: 'DM Serif Display', serif;
+    font-family: 'Playfair Display', serif;
     font-size: 36px;
     letter-spacing: -0.5px;
     margin-bottom: 8px;
@@ -394,7 +397,7 @@
   .brand-card {
     background: white;
     border: 1px solid var(--line);
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
     margin-bottom: 32px;
   }
@@ -422,7 +425,7 @@
   }
 
   .brand-header-info h2 {
-    font-family: 'DM Serif Display', serif;
+    font-family: 'Playfair Display', serif;
     font-size: 24px;
     margin-bottom: 4px;
   }
@@ -502,7 +505,7 @@
     gap: 1px;
     background: var(--line);
     border: 1px solid var(--line);
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
     margin-bottom: 48px;
   }
@@ -532,21 +535,20 @@
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    background: var(--ink);
+    background: var(--gold);
     color: white;
     border: none;
-    padding: 16px 32px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
+    padding: 14px 28px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
     font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
+    letter-spacing: 0.2px;
     cursor: pointer;
-    border-radius: 3px;
+    border-radius: 6px;
     transition: all 0.2s;
   }
 
-  .btn-primary:hover { background: var(--gold-dark); transform: translateY(-1px); }
+  .btn-primary:hover { background: var(--gold-dark); box-shadow: 0 4px 12px rgba(0,128,96,0.3); }
 
   .btn-secondary {
     display: inline-flex;
@@ -555,12 +557,12 @@
     background: transparent;
     color: var(--ink-soft);
     border: 1px solid var(--line);
-    padding: 16px 32px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
+    padding: 14px 28px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    border-radius: 3px;
+    border-radius: 6px;
     transition: all 0.2s;
   }
 
@@ -637,7 +639,7 @@
   #criteriaInput {
     flex: 1;
     border: 1px solid var(--line);
-    border-radius: 100px;
+    border-radius: 6px;
     padding: 7px 16px;
     font-family: 'DM Sans', sans-serif;
     font-size: 13px;
@@ -654,9 +656,9 @@
     background: var(--gold);
     color: white;
     border: none;
-    border-radius: 100px;
-    padding: 7px 16px;
-    font-family: 'DM Sans', sans-serif;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-family: 'Inter', sans-serif;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
@@ -677,7 +679,7 @@
   .inf-card {
     background: white;
     border: 1px solid var(--line);
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
     transition: box-shadow 0.2s, transform 0.2s;
     position: relative;
@@ -688,7 +690,7 @@
     transform: translateY(-2px);
   }
 
-  .inf-card.rank-1 { border-top: 3px solid var(--gold); }
+  .inf-card.rank-1 { border-top: 3px solid var(--gold); box-shadow: 0 4px 20px rgba(0,128,96,0.1); }
   .inf-card.rank-2 { border-top: 3px solid #aaa; }
   .inf-card.rank-3 { border-top: 3px solid #cd7f32; }
 
@@ -726,7 +728,7 @@
   }
 
   .inf-name {
-    font-family: 'DM Serif Display', serif;
+    font-family: 'Playfair Display', serif;
     font-size: 18px;
     margin-bottom: 2px;
   }
@@ -805,7 +807,7 @@
   }
 
   .inf-total-value {
-    font-family: 'DM Serif Display', serif;
+    font-family: 'Playfair Display', serif;
     font-size: 22px;
     color: var(--ink);
   }
@@ -843,7 +845,7 @@
   }
 
   .section-title {
-    font-family: 'DM Serif Display', serif;
+    font-family: 'Playfair Display', serif;
     font-size: 22px;
     margin-bottom: 8px;
   }
@@ -863,7 +865,7 @@
   }
 
   .partner-input-card h3 {
-    font-family: 'DM Serif Display', serif;
+    font-family: 'Playfair Display', serif;
     font-size: 18px;
     margin-bottom: 6px;
   }
@@ -995,7 +997,7 @@
   .roi-table {
     background: white;
     border: 1px solid var(--line);
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
   }
 
@@ -1129,7 +1131,7 @@
         <input type="text" id="brandHandle" placeholder="yourbrand" autocomplete="off" />
         <button class="btn-analyze" onclick="analyzeBrand()">Analyze →</button>
       </div>
-      <div class="hero-hint">Try <span onclick="document.getElementById('brandHandle').value='zara'; analyzeBrand()">@zara</span> or <span onclick="document.getElementById('brandHandle').value='glossier'; analyzeBrand()">@glossier</span></div>
+      <div class="hero-hint">Try <span onclick="document.getElementById('brandHandle').value='zara'; analyzeBrand()">@zara</span> or <span onclick="document.getElementById('brandHandle').value='glossier'; analyzeBrand()">@glossier</span> or any Instagram brand handle</div>
 
       <div class="how-it-works">
         <div class="hw-step">
@@ -1474,6 +1476,9 @@ async function analyzeBrand() {
   const handle = document.getElementById('brandHandle').value.trim().replace('@','');
   if(!handle) { document.getElementById('brandHandle').focus(); return; }
   currentHandle = handle;
+  currentBrandData = null;
+  criteria = [];
+  renderCriteria();
 
   document.getElementById('loadingHandle').textContent = handle;
   goTo('loading');
@@ -1525,7 +1530,8 @@ function showBrandStory(handle, apiData) {
   document.getElementById('brandSubtitle').textContent = `Here's what Chichang found about @${handle}`;
   document.getElementById('brandAvatarChar').textContent = data.avatarChar;
   document.getElementById('brandFullName').textContent = data.fullName;
-  document.getElementById('brandHandleDisplay').textContent = data.handle;
+  const handleVal = data.handle.replace('@','');
+  document.getElementById('brandHandleDisplay').innerHTML = `<a href="https://instagram.com/${handleVal}" target="_blank" style="color:var(--ink-muted);text-decoration:none;display:inline-flex;align-items:center;gap:4px;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--ink-muted)'">${data.handle} <span style="font-size:10px">↗</span></a>`;
   document.getElementById('brandSells').textContent = data.sells;
   document.getElementById('brandAudience').textContent = data.audience;
   document.getElementById('brandTone').textContent = data.tone;
@@ -1590,7 +1596,7 @@ function renderInfluencers(influencers) {
         <div class="inf-card-top">
           <div class="inf-avatar" style="background:${idx===0?'var(--gold-light)':idx===1?'#f0f0f0':'#fde8d8'}">${inf.avatar}</div>
           <div class="inf-name">${inf.name}</div>
-          <div class="inf-handle">${inf.handle}</div>
+          <a href="https://instagram.com/${inf.handle.replace('@','')}" target="_blank" class="inf-handle" style="text-decoration:none;display:inline-flex;align-items:center;gap:3px;color:var(--ink-muted)" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--ink-muted)'">${inf.handle} <span style="font-size:9px">↗</span></a>
           <div class="inf-followers">${inf.followers} followers</div>
           <div class="inf-reach-row">
             ${inf.badges.map(b => `<span class="badge badge-neutral">${b}</span>`).join('')}
@@ -1675,9 +1681,31 @@ function renderCriteria() {
   });
 }
 
-function removeCriteria(i) {
-  criteria.splice(i, 1);
+async function removeCriteria(idx) {
+  criteria.splice(idx, 1);
   renderCriteria();
+  if(criteria.length === 0) {
+    // just re-fetch without criteria
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ handle: currentHandle, criteria: [] })
+      });
+      const result = await response.json();
+      if(!result.error) { currentBrandData = result; findInfluencers(); }
+    } catch(err) { console.error(err); }
+  } else {
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ handle: currentHandle, criteria })
+      });
+      const result = await response.json();
+      if(!result.error) { currentBrandData = result; findInfluencers(); }
+    } catch(err) { console.error(err); }
+  }
 }
 
 document.addEventListener('keydown', (e) => {
