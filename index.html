@@ -1210,6 +1210,70 @@
   .delivered-yes { background: var(--green-light); color: var(--green); }
   .delivered-pending { background: var(--gold-light); color: var(--gold-dark); }
 
+  /* INLINE INFLUENCER PROGRESS STEPS */
+  .inf-progress-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 10px 0;
+    opacity: 0.3;
+    transition: opacity 0.4s ease;
+    position: relative;
+    z-index: 2;
+  }
+  .inf-progress-step.active { opacity: 1; }
+  .inf-progress-step.done { opacity: 1; }
+
+  .inf-progress-icon {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: 2px solid var(--line);
+    background: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+    transition: all 0.4s;
+    position: relative; z-index: 2;
+  }
+  .inf-progress-step.active .inf-progress-icon {
+    border-color: var(--purple);
+    background: var(--purple-light);
+    animation: iconPulse 1.5s infinite;
+  }
+  .inf-progress-step.done .inf-progress-icon {
+    border-color: var(--gold);
+    background: var(--gold);
+    font-size: 14px;
+  }
+
+  .inf-progress-body { padding-top: 6px; flex: 1; }
+  .inf-progress-label {
+    font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 2px;
+    transition: color 0.3s;
+  }
+  .inf-progress-step.active .inf-progress-label { color: var(--purple); }
+  .inf-progress-step.done .inf-progress-label { color: var(--gold); }
+
+  .inf-progress-detail {
+    font-size: 11px; color: var(--ink-muted); line-height: 1.4;
+    max-height: 0; overflow: hidden; opacity: 0;
+    transition: max-height 0.4s, opacity 0.3s;
+  }
+  .inf-progress-step.active .inf-progress-detail { max-height: 30px; opacity: 1; }
+
+  .inf-progress-check {
+    font-size: 13px; color: var(--gold);
+    padding-top: 8px; margin-left: auto;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .inf-progress-step.done .inf-progress-check { opacity: 1; }
+
+  @media (max-width: 640px) {
+    #infSearchProgress { margin-top: 16px; }
+    .inf-progress-step { gap: 10px; }
+    .inf-progress-icon { width: 32px; height: 32px; font-size: 13px; }
+  }
+
   /* FOOTER NAV */
   .bottom-nav {
     display: flex;
@@ -1611,8 +1675,80 @@
         </div>
       </div>
 
-      <div class="btn-row">
-        <button class="btn-primary" onclick="findInfluencers()">Find Influencers →</button>
+      <!-- Inline influencer search progress -->
+      <div id="infSearchProgress" style="display:none;margin-top:8px">
+        <div style="background:white;border:1px solid var(--line);border-radius:12px;overflow:hidden">
+
+          <!-- Progress header -->
+          <div style="background:var(--purple-light);border-bottom:1px solid #c5cae9;padding:18px 24px;display:flex;align-items:center;gap:12px">
+            <div style="width:10px;height:10px;border-radius:50%;background:var(--purple);animation:pulse 1.5s infinite;flex-shrink:0"></div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:var(--purple)" id="infSearchTitle">Finding influencers for @<span id="infSearchHandle"></span></div>
+              <div style="font-size:12px;color:var(--ink-muted);margin-top:2px" id="infSearchSub">Searching Instagram in real time...</div>
+            </div>
+          </div>
+
+          <!-- Step list -->
+          <div style="padding:20px 24px;display:flex;flex-direction:column;gap:0;position:relative">
+            <div style="position:absolute;left:43px;top:28px;bottom:28px;width:2px;background:var(--line)"></div>
+            <div id="infProgressFill" style="position:absolute;left:43px;top:28px;width:2px;height:0%;background:linear-gradient(180deg,var(--purple),var(--gold));transition:height 0.6s ease;z-index:1"></div>
+
+            <div class="inf-progress-step" id="ips1">
+              <div class="inf-progress-icon">🎯</div>
+              <div class="inf-progress-body">
+                <div class="inf-progress-label">Calculating influencer size tier</div>
+                <div class="inf-progress-detail">Matching brand size to right-sized creators</div>
+              </div>
+              <div class="inf-progress-check">✓</div>
+            </div>
+
+            <div class="inf-progress-step" id="ips2">
+              <div class="inf-progress-icon">🔑</div>
+              <div class="inf-progress-body">
+                <div class="inf-progress-label">Generating search keywords</div>
+                <div class="inf-progress-detail">AI building niche-specific Instagram search terms</div>
+              </div>
+              <div class="inf-progress-check">✓</div>
+            </div>
+
+            <div class="inf-progress-step" id="ips3">
+              <div class="inf-progress-icon">📱</div>
+              <div class="inf-progress-body">
+                <div class="inf-progress-label">Searching Instagram</div>
+                <div class="inf-progress-detail" id="ips3detail">Scanning creators by hashtag and keyword</div>
+              </div>
+              <div class="inf-progress-check">✓</div>
+            </div>
+
+            <div class="inf-progress-step" id="ips4">
+              <div class="inf-progress-icon">🔍</div>
+              <div class="inf-progress-body">
+                <div class="inf-progress-label">Filtering by size & niche</div>
+                <div class="inf-progress-detail">Keeping only right-sized, relevant creators</div>
+              </div>
+              <div class="inf-progress-check">✓</div>
+            </div>
+
+            <div class="inf-progress-step" id="ips5">
+              <div class="inf-progress-icon">⭐</div>
+              <div class="inf-progress-body">
+                <div class="inf-progress-label">Scoring & ranking matches</div>
+                <div class="inf-progress-detail">AI scoring niche fit, audience match & engagement</div>
+              </div>
+              <div class="inf-progress-check">✓</div>
+            </div>
+          </div>
+
+          <!-- Fun fact -->
+          <div style="border-top:1px solid var(--line);padding:14px 24px;background:var(--paper-warm);font-size:12px;color:var(--ink-muted);display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">💡</span>
+            <span id="infFact" style="transition:opacity 0.3s">Brands that use micro-influencers see up to 6x more cost-effective results than traditional advertising.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row" id="findInfluencersBtnRow">
+        <button class="btn-primary" id="findInfluencersBtn" onclick="findInfluencers()">Find Influencers →</button>
         <button class="btn-secondary" onclick="goTo(1)">← Back</button>
       </div>
     </div>
@@ -2077,29 +2213,172 @@ function showBrandStory(handle, apiData) {
 }
 
 // ─── FIND INFLUENCERS ────────────────────────────────────
-function findInfluencers() {
-  const data = currentBrandData || getMockBrand(currentHandle);
-  const infs = (currentBrandData && currentBrandData.influencers) ? currentBrandData.influencers : data.influencers;
-  const name = (currentBrandData && currentBrandData.brand) ? currentBrandData.brand.fullName : data.fullName;
-  document.getElementById('inf-brand-name').textContent = name;
+const infFacts = [
+  "Brands that use micro-influencers see up to 6x more cost-effective results than ads.",
+  "70% of teens trust influencers more than traditional celebrities.",
+  "Instagram influencer marketing is a $16B+ industry globally.",
+  "Engagement drops significantly above 100K followers — smaller is often better.",
+  "The best influencer partnerships feel like genuine recommendations, not ads.",
+  "Nano-influencers convert followers to customers at 2-3x higher rates.",
+];
 
-  // Show tier + data source badges
-  const tierRow = document.getElementById('tierBadgeRow');
-  if(tierRow) {
-    const tier = currentBrandData?.tier;
-    const source = currentBrandData?.influencerSource;
-    tierRow.innerHTML = '';
-    if(tier) {
-      tierRow.innerHTML += `<span class="badge badge-gold">🎯 ${tier.label} Tier — ${tier.description}</span>`;
+let infFactTimer = null;
+
+function startInfFacts() {
+  let idx = 0;
+  const el = document.getElementById('infFact');
+  infFactTimer = setInterval(() => {
+    if(!el) return;
+    el.style.opacity = '0';
+    setTimeout(() => {
+      idx = (idx + 1) % infFacts.length;
+      el.textContent = infFacts[idx];
+      el.style.opacity = '1';
+    }, 300);
+  }, 4000);
+}
+
+function stopInfFacts() {
+  if(infFactTimer) { clearInterval(infFactTimer); infFactTimer = null; }
+}
+
+function setInfStep(id, state) {
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.classList.remove('active','done');
+  if(state === 'active') el.classList.add('active');
+  if(state === 'done') {
+    el.classList.add('done');
+    el.querySelector('.inf-progress-icon').textContent = '✓';
+  }
+  // Update progress line
+  const steps = ['ips1','ips2','ips3','ips4','ips5'];
+  const doneCount = steps.filter(s => document.getElementById(s)?.classList.contains('done')).length;
+  const fill = document.getElementById('infProgressFill');
+  if(fill) fill.style.height = (doneCount / (steps.length-1) * 85) + '%';
+}
+
+function resetInfSteps() {
+  const icons = { ips1:'🎯', ips2:'🔑', ips3:'📱', ips4:'🔍', ips5:'⭐' };
+  ['ips1','ips2','ips3','ips4','ips5'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) {
+      el.classList.remove('active','done');
+      el.querySelector('.inf-progress-icon').textContent = icons[id];
     }
-    if(source === 'live') {
-      tierRow.innerHTML += `<span class="badge badge-green">✅ Live Instagram Data</span>`;
-    } else {
-      tierRow.innerHTML += `<span class="badge badge-neutral">🧠 AI-Powered Suggestions</span>`;
-    }
+  });
+  const fill = document.getElementById('infProgressFill');
+  if(fill) fill.style.height = '0%';
+}
+
+async function findInfluencers() {
+  // If already have influencer data cached, just show it
+  if(currentBrandData?.influencers) {
+    showInfluencerScreen();
+    return;
   }
 
-  renderInfluencers(infs);
+  // Show inline progress — hide button, show progress box
+  const btn = document.getElementById('findInfluencersBtn');
+  const btnRow = document.getElementById('findInfluencersBtnRow');
+  const progress = document.getElementById('infSearchProgress');
+
+  if(btn) btn.disabled = true;
+  if(progress) progress.style.display = 'block';
+  if(btnRow) btnRow.style.display = 'none';
+
+  // Scroll to progress smoothly
+  setTimeout(() => progress?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+
+  document.getElementById('infSearchHandle').textContent = currentHandle;
+  resetInfSteps();
+  startInfFacts();
+
+  // Animate steps with timers
+  setInfStep('ips1', 'active');
+  document.getElementById('infSearchTitle').textContent = `Finding influencers for @${currentHandle}`;
+  document.getElementById('infSearchSub').textContent = 'Calculating the right influencer size...';
+
+  const t1 = setTimeout(() => {
+    setInfStep('ips1','done'); setInfStep('ips2','active');
+    document.getElementById('infSearchSub').textContent = 'AI generating niche search keywords...';
+  }, 2000);
+
+  const t2 = setTimeout(() => {
+    setInfStep('ips2','done'); setInfStep('ips3','active');
+    document.getElementById('infSearchSub').textContent = 'Scanning Instagram for real creators...';
+    document.getElementById('ips3detail').textContent = `Searching Instagram for ${currentHandle} niche creators`;
+  }, 5000);
+
+  const t3 = setTimeout(() => {
+    setInfStep('ips3','done'); setInfStep('ips4','active');
+    document.getElementById('infSearchSub').textContent = 'Filtering by size, niche and engagement...';
+  }, 12000);
+
+  const t4 = setTimeout(() => {
+    setInfStep('ips4','done'); setInfStep('ips5','active');
+    document.getElementById('infSearchSub').textContent = 'Scoring and ranking the best matches...';
+  }, 18000);
+
+  try {
+    const response = await fetch('/api/influencers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ handle: currentHandle, brandData: currentBrandData, criteria })
+    });
+    [t1,t2,t3,t4].forEach(clearTimeout);
+    const result = await response.json();
+
+    if(!result.error) {
+      // Mark all done
+      setInfStep('ips1','done'); setInfStep('ips2','done');
+      setInfStep('ips3','done'); setInfStep('ips4','done'); setInfStep('ips5','done');
+      document.getElementById('infSearchTitle').textContent = '✓ Influencers found!';
+      document.getElementById('infSearchSub').textContent = 'Showing your top 3 matches now...';
+      currentBrandData = { ...currentBrandData, ...result };
+      stopInfFacts();
+      await new Promise(r => setTimeout(r, 800));
+      showInfluencerScreen();
+    } else {
+      throw new Error(result.error);
+    }
+  } catch(err) {
+    [t1,t2,t3,t4].forEach(clearTimeout);
+    stopInfFacts();
+    console.error('Influencer fetch error:', err);
+    // Restore button
+    if(progress) progress.style.display = 'none';
+    if(btnRow) btnRow.style.display = 'flex';
+    if(btn) btn.disabled = false;
+  }
+}
+
+function showInfluencerScreen() {
+  stopInfFacts();
+  // Reset button state for next time
+  const btn = document.getElementById('findInfluencersBtn');
+  const btnRow = document.getElementById('findInfluencersBtnRow');
+  const progress = document.getElementById('infSearchProgress');
+  if(btn) btn.disabled = false;
+  if(btnRow) btnRow.style.display = 'flex';
+  if(progress) progress.style.display = 'none';
+  resetInfSteps();
+
+  const data = currentBrandData;
+  const infs = data?.influencers;
+  const name = data?.brand?.fullName || currentHandle;
+  document.getElementById('inf-brand-name').textContent = name;
+
+  const tierRow = document.getElementById('tierBadgeRow');
+  if(tierRow) {
+    tierRow.innerHTML = '';
+    if(data?.tier) tierRow.innerHTML += `<span class="badge badge-gold">🎯 ${data.tier.label} Tier — ${data.tier.desc || data.tier.description}</span>`;
+    tierRow.innerHTML += data?.influencerSource === 'live'
+      ? `<span class="badge badge-green">✅ Live Instagram Data</span>`
+      : `<span class="badge badge-neutral">🧠 AI-Powered Suggestions</span>`;
+  }
+
+  if(infs) renderInfluencers(infs);
   goTo(3);
 }
 
