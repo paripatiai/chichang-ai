@@ -1101,7 +1101,7 @@
 
 <!-- NAV -->
 <nav>
-  <div class="logo">
+  <div class="logo" onclick="resetToHome()" style="cursor:pointer" title="Back to home">
     <span class="logo-text">Chichang</span>
     <span class="logo-ai">AI</span>
     <span class="logo-tagline" style="margin-left:12px">Influencer Intelligence</span>
@@ -1257,7 +1257,14 @@
         </div>
       </div>
 
-      <div class="influencer-grid" id="influencerGrid"></div>
+      <div style="position:relative">
+        <div id="influencerOverlay" style="display:none;position:absolute;inset:0;background:rgba(255,255,255,0.85);backdrop-filter:blur(4px);z-index:10;border-radius:12px;flex-direction:column;align-items:center;justify-content:center;gap:16px">
+          <div style="width:36px;height:36px;border:2px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite"></div>
+          <div style="font-size:13px;color:var(--ink-muted);font-weight:500" id="overlayMessage">Refining matches...</div>
+          <div style="font-size:12px;color:var(--ink-muted)" id="overlaySubMessage">Searching Instagram with new filters</div>
+        </div>
+        <div class="influencer-grid" id="influencerGrid"></div>
+      </div>
 
       <div class="btn-row">
         <button class="btn-primary" onclick="goToTracking()">Set Up Tracking →</button>
@@ -1367,6 +1374,22 @@
 // ─── STATE ───────────────────────────────────────────────
 let currentHandle = "";
 let currentBrandData = null;
+
+function resetToHome() {
+  currentHandle = '';
+  currentBrandData = null;
+  criteria = [];
+  partners = [];
+  renderCriteria();
+  document.getElementById('brandHandle').value = '';
+  // Reset loading steps
+  ['ls1','ls2','ls3','ls4','ls5'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) { el.classList.remove('active','done'); }
+  });
+  document.getElementById('ls1').classList.add('active');
+  goTo(1);
+}
 let criteria = [];
 let partners = [];
 
@@ -1596,7 +1619,7 @@ function renderInfluencers(influencers) {
         <div class="inf-card-top">
           <div class="inf-avatar" style="background:${idx===0?'var(--gold-light)':idx===1?'#f0f0f0':'#fde8d8'}">${inf.avatar}</div>
           <div class="inf-name">${inf.name}</div>
-          <a href="https://instagram.com/${inf.handle.replace('@','')}" target="_blank" class="inf-handle" style="text-decoration:none;display:inline-flex;align-items:center;gap:3px;color:var(--ink-muted)" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--ink-muted)'">${inf.handle} <span style="font-size:9px">↗</span></a>
+          <a href="https://instagram.com/${(inf.handle||'').replace('@','').trim().toLowerCase()}" target="_blank" rel="noopener" class="inf-handle" style="text-decoration:none;display:inline-flex;align-items:center;gap:3px;color:var(--ink-muted)" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--ink-muted)'">${inf.handle} <span style="font-size:9px">↗</span></a>
           <div class="inf-followers">${inf.followers} followers</div>
           <div class="inf-reach-row">
             ${inf.badges.map(b => `<span class="badge badge-neutral">${b}</span>`).join('')}
@@ -1615,6 +1638,12 @@ function renderInfluencers(influencers) {
         <div class="inf-card-reason">
           <div class="inf-reason-title">Why this match</div>
           <div class="inf-reason-text">${inf.reason}</div>
+          <a href="https://instagram.com/${(inf.handle||'').replace('@','').trim().toLowerCase()}" target="_blank" rel="noopener"
+            style="display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:8px 14px;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:white;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;transition:opacity 0.2s"
+            onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            View on Instagram
+          </a>
         </div>
       </div>
     `;
@@ -1647,11 +1676,27 @@ async function addCriteria() {
   criteria.push(val);
   input.value = '';
   renderCriteria();
+  await refreshInfluencers();
+}
 
-  // Re-fetch with new criteria applied
-  const tierRow = document.getElementById('tierBadgeRow');
-  if(tierRow) tierRow.innerHTML = '<span class="badge badge-neutral">🔄 Refining matches...</span>';
+function showInfluencerOverlay(msg, sub) {
+  const overlay = document.getElementById('influencerOverlay');
+  if(!overlay) return;
+  document.getElementById('overlayMessage').textContent = msg || 'Refining matches...';
+  document.getElementById('overlaySubMessage').textContent = sub || 'Searching Instagram with new filters';
+  overlay.style.display = 'flex';
+  // Make sure grid has min height so overlay is visible
+  document.getElementById('influencerGrid').style.minHeight = '300px';
+}
 
+function hideInfluencerOverlay() {
+  const overlay = document.getElementById('influencerOverlay');
+  if(overlay) overlay.style.display = 'none';
+  document.getElementById('influencerGrid').style.minHeight = '';
+}
+
+async function refreshInfluencers() {
+  showInfluencerOverlay('Finding better matches...', `Applying ${criteria.length} filter${criteria.length !== 1 ? 's' : ''}: ${criteria.join(', ')}`);
   try {
     const response = await fetch('/api/analyze', {
       method: 'POST',
@@ -1661,10 +1706,22 @@ async function addCriteria() {
     const result = await response.json();
     if(!result.error) {
       currentBrandData = result;
-      findInfluencers();
+      const infs = result.influencers;
+      renderInfluencers(infs);
+      // Update tier badges
+      const tierRow = document.getElementById('tierBadgeRow');
+      if(tierRow && result.tier) {
+        tierRow.innerHTML = '';
+        tierRow.innerHTML += `<span class="badge badge-gold">🎯 ${result.tier.label} Tier — ${result.tier.description}</span>`;
+        tierRow.innerHTML += result.influencerSource === 'live'
+          ? `<span class="badge badge-green">✅ Live Instagram Data</span>`
+          : `<span class="badge badge-neutral">🧠 AI-Powered Suggestions</span>`;
+      }
     }
   } catch(err) {
     console.error('Criteria refresh error:', err);
+  } finally {
+    hideInfluencerOverlay();
   }
 }
 
@@ -1684,28 +1741,7 @@ function renderCriteria() {
 async function removeCriteria(idx) {
   criteria.splice(idx, 1);
   renderCriteria();
-  if(criteria.length === 0) {
-    // just re-fetch without criteria
-    try {
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ handle: currentHandle, criteria: [] })
-      });
-      const result = await response.json();
-      if(!result.error) { currentBrandData = result; findInfluencers(); }
-    } catch(err) { console.error(err); }
-  } else {
-    try {
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ handle: currentHandle, criteria })
-      });
-      const result = await response.json();
-      if(!result.error) { currentBrandData = result; findInfluencers(); }
-    } catch(err) { console.error(err); }
-  }
+  await refreshInfluencers();
 }
 
 document.addEventListener('keydown', (e) => {
