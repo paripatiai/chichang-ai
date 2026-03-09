@@ -1,1729 +1,310 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chichang.ai — Influencer Intelligence</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --ink: #0f0f0f;
-    --ink-soft: #4a4a4a;
-    --ink-muted: #9a9a9a;
-    --paper: #fafaf8;
-    --paper-warm: #f4f2ed;
-    --gold: #c8a951;
-    --gold-light: #f0e4bb;
-    --gold-dark: #a88a38;
-    --line: #e8e4dc;
-    --green: #2d6a4f;
-    --green-light: #d8f3dc;
-    --red-light: #ffe8e8;
-    --red: #c0392b;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--paper);
-    color: var(--ink);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* NAV */
-  nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px 48px;
-    background: rgba(250,250,248,0.92);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--line);
-  }
-
-  .logo {
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-  }
-
-  .logo-text {
-    font-family: 'DM Serif Display', serif;
-    font-size: 22px;
-    color: var(--ink);
-    letter-spacing: -0.5px;
-  }
-
-  .logo-ai {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--gold);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-
-  .logo-tagline {
-    font-size: 11px;
-    color: var(--ink-muted);
-    font-weight: 300;
-    letter-spacing: 0.5px;
-  }
-
-  /* PROGRESS STEPS */
-  .progress-bar {
-    display: flex;
-    align-items: center;
-    gap: 0;
-  }
-
-  .step {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    color: var(--ink-muted);
-    transition: color 0.3s;
-  }
-
-  .step.active { color: var(--ink); }
-  .step.done { color: var(--gold); }
-
-  .step-num {
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    border: 1.5px solid currentColor;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 10px;
-    transition: all 0.3s;
-  }
-
-  .step.done .step-num {
-    background: var(--gold);
-    border-color: var(--gold);
-    color: white;
-  }
-
-  .step.active .step-num {
-    background: var(--ink);
-    border-color: var(--ink);
-    color: white;
-  }
-
-  .step-divider {
-    width: 32px;
-    height: 1px;
-    background: var(--line);
-    margin: 0 8px;
-  }
-
-  /* MAIN */
-  main {
-    padding-top: 100px;
-    min-height: 100vh;
-  }
-
-  /* SCREENS */
-  .screen {
-    display: none;
-    animation: fadeUp 0.5s ease forwards;
-  }
-  .screen.active { display: block; }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* SCREEN 1 — HERO */
-  .hero {
-    min-height: calc(100vh - 100px);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 24px;
-    text-align: center;
-    position: relative;
-  }
-
-  .hero-eyebrow {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 24px;
-  }
-
-  .hero-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(42px, 6vw, 72px);
-    line-height: 1.1;
-    letter-spacing: -1px;
-    color: var(--ink);
-    margin-bottom: 20px;
-    max-width: 720px;
-  }
-
-  .hero-title em {
-    font-style: italic;
-    color: var(--gold);
-  }
-
-  .hero-sub {
-    font-size: 17px;
-    color: var(--ink-soft);
-    font-weight: 300;
-    line-height: 1.6;
-    max-width: 480px;
-    margin-bottom: 56px;
-  }
-
-  .input-group {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    width: 100%;
-    max-width: 520px;
-    background: white;
-    border: 1.5px solid var(--line);
-    border-radius: 4px;
-    overflow: hidden;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-
-  .input-group:focus-within {
-    border-color: var(--gold);
-    box-shadow: 0 4px 32px rgba(200,169,81,0.15);
-  }
-
-  .input-at {
-    padding: 0 16px;
-    font-size: 20px;
-    color: var(--ink-muted);
-    font-weight: 300;
-    border-right: 1px solid var(--line);
-    height: 58px;
-    display: flex;
-    align-items: center;
-  }
-
-  #brandHandle {
-    flex: 1;
-    border: none;
-    outline: none;
-    padding: 0 20px;
-    font-size: 16px;
-    font-family: 'DM Sans', sans-serif;
-    background: transparent;
-    color: var(--ink);
-    height: 58px;
-  }
-
-  #brandHandle::placeholder { color: var(--ink-muted); font-weight: 300; }
-
-  .btn-analyze {
-    background: var(--ink);
-    color: white;
-    border: none;
-    padding: 0 28px;
-    height: 58px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: background 0.2s;
-    white-space: nowrap;
-  }
-
-  .btn-analyze:hover { background: var(--gold-dark); }
-
-  .hero-hint {
-    margin-top: 20px;
-    font-size: 12px;
-    color: var(--ink-muted);
-  }
-
-  .hero-hint span {
-    color: var(--gold);
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-
-  /* HOW IT WORKS */
-  .how-it-works {
-    margin-top: 80px;
-    display: flex;
-    gap: 48px;
-    align-items: flex-start;
-    justify-content: center;
-  }
-
-  .hw-step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    max-width: 160px;
-    text-align: center;
-  }
-
-  .hw-icon {
-    width: 48px; height: 48px;
-    border: 1px solid var(--line);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px;
-    background: white;
-  }
-
-  .hw-label {
-    font-size: 12px;
-    color: var(--ink-soft);
-    font-weight: 400;
-    line-height: 1.5;
-  }
-
-  .hw-arrow {
-    margin-top: 24px;
-    color: var(--line);
-    font-size: 20px;
-  }
-
-  /* LOADING */
-  .loading-screen {
-    min-height: calc(100vh - 100px);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 24px;
-  }
-
-  .loading-spinner {
-    width: 48px; height: 48px;
-    border: 2px solid var(--line);
-    border-top-color: var(--gold);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .loading-label {
-    font-size: 13px;
-    color: var(--ink-muted);
-    font-weight: 400;
-    letter-spacing: 0.5px;
-  }
-
-  .loading-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 8px;
-  }
-
-  .loading-step {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 13px;
-    color: var(--ink-muted);
-    opacity: 0;
-    animation: fadeIn 0.4s ease forwards;
-  }
-
-  .loading-step.done { color: var(--green); }
-
-  .loading-step-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--line);
-    flex-shrink: 0;
-  }
-
-  .loading-step.done .loading-step-dot { background: var(--green); }
-  .loading-step.active .loading-step-dot { background: var(--gold); animation: pulse 1s infinite; }
-
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-  @keyframes fadeIn { to { opacity: 1; } }
-
-  /* SCREEN 2 — BRAND STORY */
-  .page-container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 60px 24px;
-  }
-
-  .page-eyebrow {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 12px;
-  }
-
-  .page-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 36px;
-    letter-spacing: -0.5px;
-    margin-bottom: 8px;
-  }
-
-  .page-sub {
-    font-size: 15px;
-    color: var(--ink-muted);
-    margin-bottom: 48px;
-  }
-
-  .brand-card {
-    background: white;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 32px;
-  }
-
-  .brand-card-header {
-    padding: 32px 36px;
-    border-bottom: 1px solid var(--line);
-    display: flex;
-    align-items: center;
-    gap: 24px;
-  }
-
-  .brand-avatar {
-    width: 72px; height: 72px;
-    border-radius: 50%;
-    background: var(--gold-light);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    flex-shrink: 0;
-    font-family: 'DM Serif Display', serif;
-    color: var(--gold-dark);
-    font-weight: 400;
-  }
-
-  .brand-header-info h2 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 24px;
-    margin-bottom: 4px;
-  }
-
-  .brand-handle {
-    font-size: 13px;
-    color: var(--ink-muted);
-  }
-
-  .brand-badges {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-    flex-wrap: wrap;
-  }
-
-  .badge {
-    font-size: 11px;
-    font-weight: 500;
-    padding: 4px 12px;
-    border-radius: 100px;
-    letter-spacing: 0.3px;
-  }
-
-  .badge-gold { background: var(--gold-light); color: var(--gold-dark); }
-  .badge-green { background: var(--green-light); color: var(--green); }
-  .badge-neutral { background: var(--paper-warm); color: var(--ink-soft); }
-
-  .brand-card-body {
-    padding: 32px 36px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 32px;
-  }
-
-  .brand-stat-group h4 {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--ink-muted);
-    margin-bottom: 10px;
-  }
-
-  .brand-stat-group p {
-    font-size: 15px;
-    color: var(--ink);
-    line-height: 1.6;
-    font-weight: 300;
-  }
-
-  .brand-story {
-    grid-column: 1 / -1;
-    padding-top: 24px;
-    border-top: 1px solid var(--line);
-  }
-
-  .brand-story h4 {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--ink-muted);
-    margin-bottom: 12px;
-  }
-
-  .brand-story p {
-    font-size: 15px;
-    color: var(--ink-soft);
-    line-height: 1.8;
-    font-weight: 300;
-  }
-
-  .metrics-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1px;
-    background: var(--line);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 48px;
-  }
-
-  .metric {
-    background: white;
-    padding: 24px 20px;
-    text-align: center;
-  }
-
-  .metric-value {
-    font-family: 'DM Serif Display', serif;
-    font-size: 28px;
-    color: var(--ink);
-    margin-bottom: 4px;
-  }
-
-  .metric-label {
-    font-size: 11px;
-    color: var(--ink-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  /* CTA BUTTON */
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--ink);
-    color: white;
-    border: none;
-    padding: 16px 32px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    cursor: pointer;
-    border-radius: 3px;
-    transition: all 0.2s;
-  }
-
-  .btn-primary:hover { background: var(--gold-dark); transform: translateY(-1px); }
-
-  .btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    background: transparent;
-    color: var(--ink-soft);
-    border: 1px solid var(--line);
-    padding: 16px 32px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    border-radius: 3px;
-    transition: all 0.2s;
-  }
-
-  .btn-secondary:hover { border-color: var(--ink-soft); color: var(--ink); }
-
-  .btn-row {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-    margin-top: 8px;
-  }
-
-  /* SCREEN 3 — INFLUENCERS */
-  .criteria-bar {
-    background: white;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 20px 24px;
-    margin-bottom: 32px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-
-  .criteria-label {
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    color: var(--ink-muted);
-    flex-shrink: 0;
-  }
-
-  .criteria-chips {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    flex: 1;
-  }
-
-  .criteria-chip {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--paper-warm);
-    border: 1px solid var(--line);
-    border-radius: 100px;
-    padding: 5px 12px 5px 14px;
-    font-size: 12px;
-    color: var(--ink-soft);
-  }
-
-  .criteria-chip button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--ink-muted);
-    font-size: 14px;
-    line-height: 1;
-    padding: 0;
-  }
-
-  .criteria-chip button:hover { color: var(--red); }
-
-  .add-criteria {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex: 1;
-    min-width: 200px;
-  }
-
-  #criteriaInput {
-    flex: 1;
-    border: 1px solid var(--line);
-    border-radius: 100px;
-    padding: 7px 16px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    outline: none;
-    background: var(--paper);
-    color: var(--ink);
-    transition: border-color 0.2s;
-  }
-
-  #criteriaInput:focus { border-color: var(--gold); }
-  #criteriaInput::placeholder { color: var(--ink-muted); }
-
-  .btn-add-criteria {
-    background: var(--gold);
-    color: white;
-    border: none;
-    border-radius: 100px;
-    padding: 7px 16px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-    white-space: nowrap;
-  }
-
-  .btn-add-criteria:hover { background: var(--gold-dark); }
-
-  /* INFLUENCER CARDS */
-  .influencer-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    margin-bottom: 48px;
-  }
-
-  .inf-card {
-    background: white;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    overflow: hidden;
-    transition: box-shadow 0.2s, transform 0.2s;
-    position: relative;
-  }
-
-  .inf-card:hover {
-    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
-    transform: translateY(-2px);
-  }
-
-  .inf-card.rank-1 { border-top: 3px solid var(--gold); }
-  .inf-card.rank-2 { border-top: 3px solid #aaa; }
-  .inf-card.rank-3 { border-top: 3px solid #cd7f32; }
-
-  .inf-rank {
-    position: absolute;
-    top: 14px; right: 14px;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-
-  .rank-1 .inf-rank { color: var(--gold); }
-  .rank-2 .inf-rank { color: #888; }
-  .rank-3 .inf-rank { color: #cd7f32; }
-
-  .inf-card-top {
-    padding: 24px 20px 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .inf-avatar {
-    width: 64px; height: 64px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    margin-bottom: 12px;
-    font-family: 'DM Serif Display', serif;
-  }
-
-  .inf-name {
-    font-family: 'DM Serif Display', serif;
-    font-size: 18px;
-    margin-bottom: 2px;
-  }
-
-  .inf-handle {
-    font-size: 12px;
-    color: var(--ink-muted);
-    margin-bottom: 10px;
-  }
-
-  .inf-followers {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--ink-soft);
-  }
-
-  .inf-card-scores {
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .score-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 8px;
-  }
-
-  .score-row:last-child { margin-bottom: 0; }
-
-  .score-label {
-    font-size: 11px;
-    color: var(--ink-muted);
-    width: 100px;
-    flex-shrink: 0;
-  }
-
-  .score-bar-bg {
-    flex: 1;
-    height: 4px;
-    background: var(--paper-warm);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .score-bar-fill {
-    height: 100%;
-    border-radius: 2px;
-    background: var(--gold);
-    transition: width 1s ease;
-  }
-
-  .score-val {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--ink);
-    width: 24px;
-    text-align: right;
-  }
-
-  .inf-total-score {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 20px;
-    background: var(--paper-warm);
-    border-bottom: 1px solid var(--line);
-  }
-
-  .inf-total-label {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--ink-muted);
-  }
-
-  .inf-total-value {
-    font-family: 'DM Serif Display', serif;
-    font-size: 22px;
-    color: var(--ink);
-  }
-
-  .inf-card-reason {
-    padding: 16px 20px;
-  }
-
-  .inf-reason-title {
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--ink-muted);
-    margin-bottom: 8px;
-  }
-
-  .inf-reason-text {
-    font-size: 12px;
-    color: var(--ink-soft);
-    line-height: 1.6;
-    font-weight: 300;
-  }
-
-  .inf-reach-row {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-    flex-wrap: wrap;
-  }
-
-  /* SCREEN 4 — TRACKING */
-  .tracking-section {
-    margin-bottom: 48px;
-  }
-
-  .section-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 22px;
-    margin-bottom: 8px;
-  }
-
-  .section-sub {
-    font-size: 14px;
-    color: var(--ink-muted);
-    margin-bottom: 24px;
-  }
-
-  .partner-input-card {
-    background: white;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 28px 32px;
-    margin-bottom: 32px;
-  }
-
-  .partner-input-card h3 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 18px;
-    margin-bottom: 6px;
-  }
-
-  .partner-input-card p {
-    font-size: 13px;
-    color: var(--ink-muted);
-    margin-bottom: 20px;
-  }
-
-  .partner-input-row {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-  }
-
-  #partnerHandle {
-    flex: 1;
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    padding: 12px 16px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    outline: none;
-    background: var(--paper);
-    transition: border-color 0.2s;
-  }
-
-  #partnerHandle:focus { border-color: var(--gold); }
-
-  .partner-chips {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 20px;
-  }
-
-  .partner-chip {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--paper-warm);
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    padding: 14px 18px;
-  }
-
-  .partner-chip-left {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-
-  .partner-chip-avatar {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    background: var(--gold-light);
-  }
-
-  .partner-chip-name {
-    font-weight: 500;
-    font-size: 14px;
-  }
-
-  .partner-chip-handle {
-    font-size: 12px;
-    color: var(--ink-muted);
-  }
-
-  .partner-status {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: var(--green);
-    font-weight: 500;
-  }
-
-  .status-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--green);
-    animation: pulse 2s infinite;
-  }
-
-  /* ROI DASHBOARD */
-  .roi-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 32px;
-  }
-
-  .roi-card {
-    background: white;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 20px;
-    text-align: center;
-  }
-
-  .roi-value {
-    font-family: 'DM Serif Display', serif;
-    font-size: 32px;
-    color: var(--ink);
-    margin-bottom: 4px;
-  }
-
-  .roi-label {
-    font-size: 11px;
-    color: var(--ink-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .roi-change {
-    font-size: 12px;
-    margin-top: 6px;
-    font-weight: 500;
-  }
-
-  .roi-change.up { color: var(--green); }
-  .roi-change.down { color: var(--red); }
-
-  .roi-table {
-    background: white;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .roi-table-header {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-    padding: 14px 20px;
-    border-bottom: 1px solid var(--line);
-    background: var(--paper-warm);
-  }
-
-  .roi-table-header span {
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--ink-muted);
-  }
-
-  .roi-table-row {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--line);
-    align-items: center;
-    transition: background 0.15s;
-  }
-
-  .roi-table-row:last-child { border-bottom: none; }
-  .roi-table-row:hover { background: var(--paper-warm); }
-
-  .roi-influencer {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .roi-inf-avatar {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    background: var(--gold-light);
-  }
-
-  .roi-inf-name { font-size: 14px; font-weight: 500; }
-  .roi-inf-handle { font-size: 11px; color: var(--ink-muted); }
-
-  .roi-cell { font-size: 13px; color: var(--ink-soft); }
-
-  .delivered-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 11px;
-    font-weight: 500;
-    padding: 4px 10px;
-    border-radius: 100px;
-  }
-
-  .delivered-yes { background: var(--green-light); color: var(--green); }
-  .delivered-pending { background: var(--gold-light); color: var(--gold-dark); }
-
-  /* FOOTER NAV */
-  .bottom-nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 48px;
-    padding-top: 24px;
-    border-top: 1px solid var(--line);
-  }
-
-  /* UTILITY */
-  .text-muted { color: var(--ink-muted); }
-  .mt-8 { margin-top: 8px; }
-  .mt-16 { margin-top: 16px; }
-  .mt-24 { margin-top: 24px; }
-
-  /* RESPONSIVE */
-  @media (max-width: 768px) {
-    nav { padding: 16px 20px; }
-    .progress-bar { display: none; }
-    .how-it-works { flex-wrap: wrap; gap: 24px; }
-    .hw-arrow { display: none; }
-    .brand-card-body { grid-template-columns: 1fr; }
-    .metrics-row { grid-template-columns: repeat(2, 1fr); }
-    .influencer-grid { grid-template-columns: 1fr; }
-    .roi-grid { grid-template-columns: repeat(2, 1fr); }
-    .roi-table-header, .roi-table-row { grid-template-columns: 2fr 1fr 1fr; }
-    .roi-table-header span:nth-child(4),
-    .roi-table-header span:nth-child(5),
-    .roi-table-row > *:nth-child(4),
-    .roi-table-row > *:nth-child(5) { display: none; }
-  }
-</style>
-</head>
-<body>
-
-<!-- NAV -->
-<nav>
-  <div class="logo">
-    <span class="logo-text">Chichang</span>
-    <span class="logo-ai">AI</span>
-    <span class="logo-tagline" style="margin-left:12px">Influencer Intelligence</span>
-  </div>
-  <div class="progress-bar" id="progressBar">
-    <div class="step active" id="step1"><div class="step-num">1</div> Brand</div>
-    <div class="step-divider"></div>
-    <div class="step" id="step2"><div class="step-num">2</div> Analysis</div>
-    <div class="step-divider"></div>
-    <div class="step" id="step3"><div class="step-num">3</div> Influencers</div>
-    <div class="step-divider"></div>
-    <div class="step" id="step4"><div class="step-num">4</div> Tracking</div>
-  </div>
-</nav>
-
-<main>
-
-  <!-- SCREEN 1: ENTER BRAND -->
-  <div class="screen active" id="screen1">
-    <div class="hero">
-      <div class="hero-eyebrow">Influencer Intelligence Platform</div>
-      <h1 class="hero-title">Find influencers who actually <em>move</em> your brand</h1>
-      <p class="hero-sub">Enter any Instagram brand handle. Chichang analyzes the brand, finds the best-fit influencers, scores them, and tracks their delivery.</p>
-
-      <div class="input-group">
-        <div class="input-at">@</div>
-        <input type="text" id="brandHandle" placeholder="yourbrand" autocomplete="off" />
-        <button class="btn-analyze" onclick="analyzeBrand()">Analyze →</button>
-      </div>
-      <div class="hero-hint">Try <span onclick="document.getElementById('brandHandle').value='zara'; analyzeBrand()">@zara</span> or <span onclick="document.getElementById('brandHandle').value='glossier'; analyzeBrand()">@glossier</span></div>
-
-      <div class="how-it-works">
-        <div class="hw-step">
-          <div class="hw-icon">🔍</div>
-          <div class="hw-label">Enter brand handle</div>
-        </div>
-        <div class="hw-arrow">→</div>
-        <div class="hw-step">
-          <div class="hw-icon">🧠</div>
-          <div class="hw-label">AI reads the brand story</div>
-        </div>
-        <div class="hw-arrow">→</div>
-        <div class="hw-step">
-          <div class="hw-icon">⭐</div>
-          <div class="hw-label">Top 3 influencers matched & scored</div>
-        </div>
-        <div class="hw-arrow">→</div>
-        <div class="hw-step">
-          <div class="hw-icon">📊</div>
-          <div class="hw-label">Track ROI & delivery</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SCREEN LOADING -->
-  <div class="screen" id="screenLoading">
-    <div class="loading-screen">
-      <div class="loading-spinner"></div>
-      <div style="text-align:center">
-        <div class="loading-label" id="loadingTitle">Analyzing @<span id="loadingHandle"></span></div>
-        <div class="loading-steps" id="loadingSteps">
-          <div class="loading-step active" id="ls1"><div class="loading-step-dot"></div>Opening Instagram profile...</div>
-          <div class="loading-step" id="ls2"><div class="loading-step-dot"></div>Reading posts, captions & hashtags...</div>
-          <div class="loading-step" id="ls3"><div class="loading-step-dot"></div>Building brand profile with AI...</div>
-          <div class="loading-step" id="ls4"><div class="loading-step-dot"></div>Identifying influencer criteria...</div>
-          <div class="loading-step" id="ls5"><div class="loading-step-dot"></div>Searching & scoring top matches...</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SCREEN 2: BRAND STORY -->
-  <div class="screen" id="screen2">
-    <div class="page-container">
-      <div class="page-eyebrow">Brand Analysis</div>
-      <h1 class="page-title" id="brandName">Brand Story</h1>
-      <p class="page-sub" id="brandSubtitle">Here's what Chichang found</p>
-
-      <div class="brand-card">
-        <div class="brand-card-header">
-          <div class="brand-avatar" id="brandAvatarChar">Z</div>
-          <div class="brand-header-info">
-            <h2 id="brandFullName">Brand Name</h2>
-            <div class="brand-handle" id="brandHandleDisplay">@handle</div>
-            <div class="brand-badges" id="brandBadges"></div>
-          </div>
-        </div>
-        <div class="brand-card-body">
-          <div class="brand-stat-group">
-            <h4>What They Sell</h4>
-            <p id="brandSells">—</p>
-          </div>
-          <div class="brand-stat-group">
-            <h4>Target Audience</h4>
-            <p id="brandAudience">—</p>
-          </div>
-          <div class="brand-stat-group">
-            <h4>Tone & Style</h4>
-            <p id="brandTone">—</p>
-          </div>
-          <div class="brand-stat-group">
-            <h4>Market & Geography</h4>
-            <p id="brandMarket">—</p>
-          </div>
-          <div class="brand-story">
-            <h4>Brand Story</h4>
-            <p id="brandStory">—</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="metrics-row">
-        <div class="metric">
-          <div class="metric-value" id="mFollowers">—</div>
-          <div class="metric-label">Followers</div>
-        </div>
-        <div class="metric">
-          <div class="metric-value" id="mEngagement">—</div>
-          <div class="metric-label">Avg. Engagement</div>
-        </div>
-        <div class="metric">
-          <div class="metric-value" id="mPosts">—</div>
-          <div class="metric-label">Posts / Week</div>
-        </div>
-        <div class="metric">
-          <div class="metric-value" id="mContent">—</div>
-          <div class="metric-label">Top Content</div>
-        </div>
-      </div>
-
-      <div class="btn-row">
-        <button class="btn-primary" onclick="findInfluencers()">Find Influencers →</button>
-        <button class="btn-secondary" onclick="goTo(1)">← Back</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- SCREEN 3: INFLUENCERS -->
-  <div class="screen" id="screen3">
-    <div class="page-container">
-      <div class="page-eyebrow">Influencer Matches</div>
-      <h1 class="page-title">Top 3 for <span id="inf-brand-name">Brand</span></h1>
-      <p class="page-sub">Scored across niche match, audience fit, engagement quality & collaboration openness.</p>
-      <div id="tierBadgeRow" style="display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap"></div>
-
-      <div class="criteria-bar">
-        <div class="criteria-label">Filters</div>
-        <div class="criteria-chips" id="criteriaChips"></div>
-        <div class="add-criteria">
-          <input type="text" id="criteriaInput" placeholder="e.g. Female, India, 18-25, Fashion, Hindi..." />
-          <button class="btn-add-criteria" onclick="addCriteria()">+ Add</button>
-        </div>
-      </div>
-
-      <div class="influencer-grid" id="influencerGrid"></div>
-
-      <div class="btn-row">
-        <button class="btn-primary" onclick="goToTracking()">Set Up Tracking →</button>
-        <button class="btn-secondary" onclick="goTo(2)">← Back to Brand</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- SCREEN 4: TRACKING -->
-  <div class="screen" id="screen4">
-    <div class="page-container">
-      <div class="page-eyebrow">ROI Tracking</div>
-      <h1 class="page-title">Influencer Tracking</h1>
-      <p class="page-sub">Confirm who you partnered with. Chichang monitors their delivery and reports your ROI.</p>
-
-      <div class="tracking-section">
-        <div class="partner-input-card">
-          <h3>Add Your Partners</h3>
-          <p>Enter the Instagram handles of influencers you have confirmed partnerships with.</p>
-          <div class="partner-input-row">
-            <span style="color:var(--ink-muted);font-size:18px">@</span>
-            <input type="text" id="partnerHandle" placeholder="influencer handle" />
-            <button class="btn-primary" onclick="addPartner()" style="padding:12px 24px">Add</button>
-          </div>
-          <div class="partner-chips" id="partnerChips"></div>
-        </div>
-      </div>
-
-      <div class="tracking-section">
-        <div class="section-title">ROI Dashboard</div>
-        <div class="section-sub">Live stats from your confirmed influencer partners.</div>
-
-        <div class="roi-grid">
-          <div class="roi-card">
-            <div class="roi-value">2.4M</div>
-            <div class="roi-label">Total Impressions</div>
-            <div class="roi-change up">↑ 18% this week</div>
-          </div>
-          <div class="roi-card">
-            <div class="roi-value">4.7%</div>
-            <div class="roi-label">Avg. Engagement</div>
-            <div class="roi-change up">↑ 0.3%</div>
-          </div>
-          <div class="roi-card">
-            <div class="roi-value">12</div>
-            <div class="roi-label">Posts Delivered</div>
-            <div class="roi-change up">On track</div>
-          </div>
-          <div class="roi-card">
-            <div class="roi-value">86%</div>
-            <div class="roi-label">Delivery Rate</div>
-            <div class="roi-change down">↓ 2 pending</div>
-          </div>
-        </div>
-
-        <div class="roi-table">
-          <div class="roi-table-header">
-            <span>Influencer</span>
-            <span>Impressions</span>
-            <span>Engagement</span>
-            <span>Posts</span>
-            <span>Delivered?</span>
-          </div>
-          <div class="roi-table-row">
-            <div class="roi-influencer">
-              <div class="roi-inf-avatar">🌿</div>
-              <div><div class="roi-inf-name">Meera Nair</div><div class="roi-inf-handle">@meeranair</div></div>
-            </div>
-            <div class="roi-cell">980K</div>
-            <div class="roi-cell">5.2%</div>
-            <div class="roi-cell">5/5</div>
-            <div><span class="delivered-badge delivered-yes">✓ Yes</span></div>
-          </div>
-          <div class="roi-table-row">
-            <div class="roi-influencer">
-              <div class="roi-inf-avatar">✨</div>
-              <div><div class="roi-inf-name">Priya Sharma</div><div class="roi-inf-handle">@priyasharma</div></div>
-            </div>
-            <div class="roi-cell">860K</div>
-            <div class="roi-cell">4.1%</div>
-            <div class="roi-cell">4/5</div>
-            <div><span class="delivered-badge delivered-pending">⏳ Pending</span></div>
-          </div>
-          <div class="roi-table-row">
-            <div class="roi-influencer">
-              <div class="roi-inf-avatar">🎨</div>
-              <div><div class="roi-inf-name">Ananya Rao</div><div class="roi-inf-handle">@ananyarao</div></div>
-            </div>
-            <div class="roi-cell">560K</div>
-            <div class="roi-cell">4.9%</div>
-            <div class="roi-cell">3/2</div>
-            <div><span class="delivered-badge delivered-yes">✓ Exceeded</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="btn-row">
-        <button class="btn-secondary" onclick="goTo(3)">← Back to Influencers</button>
-        <button class="btn-primary" onclick="goTo(1)" style="background:var(--gold-dark)">Start New Search</button>
-      </div>
-    </div>
-  </div>
-
-</main>
-
-<script>
-// ─── STATE ───────────────────────────────────────────────
-let currentHandle = "";
-let currentBrandData = null;
-let criteria = [];
-let partners = [];
-
-// ─── MOCK DATA ───────────────────────────────────────────
-const mockBrands = {
-  zara: {
-    fullName: 'Zara', handle: '@zara', avatarChar: 'Z',
-    sells: 'Fast fashion — clothing, accessories, and footwear for men, women, and children.',
-    audience: 'Fashion-forward millennials & Gen Z, ages 18–35, urban, globally minded.',
-    tone: 'Minimal, editorial, aspirational. High-fashion feel at accessible price points.',
-    market: 'Global — Spain HQ, strong in Europe, Asia & Americas. Online + 2,000+ stores.',
-    story: 'Founded in 1975 in A Coruña, Spain, Zara pioneered fast fashion by collapsing the design-to-shelf cycle from months to weeks. Their approach — observe street trends, produce small batches, refresh weekly — turned fashion retail on its head. Today Zara is Inditex\'s crown jewel, synonymous with affordable sophistication.',
-    followers: '58.2M', engagement: '1.8%', posts: '14', content: 'Reels',
-    badges: ['Fashion', 'Global', 'Luxury-Adjacent'],
-    influencers: [
-      { name: 'Camille Charrière', handle: '@camille_charriere', followers: '1.4M', avatar: '👗',
-        niche: 9, audience: 9, engagement: 8, openness: 9,
-        reason: 'Parisian street-style icon perfectly aligned with Zara\'s editorial aesthetic. Consistent brand collab history with fashion houses, strong EU audience overlap.',
-        badges: ['Paris', 'Fashion', 'Brand Deals ✓'] },
-      { name: 'Wisdom Kaye', handle: '@wisdm8', followers: '4.2M', avatar: '🕶️',
-        niche: 8, audience: 8, engagement: 9, openness: 8,
-        reason: 'Gen Z menswear creator with exceptional engagement. His styling content mirrors Zara\'s editorial look and he\'s vocal about brand partnerships.',
-        badges: ['NY', 'Menswear', 'Gen Z'] },
-      { name: 'Tamara Kalinic', handle: '@tamara', followers: '2.1M', avatar: '✨',
-        niche: 8, audience: 9, engagement: 7, openness: 9,
-        reason: 'European fashion blogger with loyal female 25–35 audience. Strong commercial track record and direct email in bio.',
-        badges: ['Europe', 'Female 25-35', 'Email ✓'] }
-    ]
-  },
-  glossier: {
-    fullName: 'Glossier', handle: '@glossier', avatarChar: 'G',
-    sells: 'Skincare, makeup, and fragrance built on the philosophy of "skin first, makeup second."',
-    audience: 'Millennial & Gen Z women, 18–32, urban, beauty-curious, value authenticity over perfection.',
-    tone: 'Warm, inclusive, conversational. Celebrates real skin, real people, no filter needed.',
-    market: 'USA-first, expanding to UK and Canada. D2C online with select flagship stores.',
-    story: 'Glossier was born from Into The Gloss, a beauty blog Emily Weiss started in 2010. By 2014 it had launched as a brand, famously building its product line from community feedback. It\'s a rare brand that turned its customers into its most powerful marketing channel.',
-    followers: '2.9M', engagement: '3.2%', posts: '8', content: 'Carousels',
-    badges: ['Beauty', 'D2C', 'Community-Led'],
-    influencers: [
-      { name: 'Hyram Yarbro', handle: '@skincarebyhyram', followers: '6.8M', avatar: '🧴',
-        niche: 9, audience: 9, engagement: 9, openness: 7,
-        reason: 'The most trusted skincare educator on Instagram. His audience trusts his ingredient breakdowns, which aligns perfectly with Glossier\'s transparent formulation philosophy.',
-        badges: ['USA', 'Skincare', 'High Trust'] },
-      { name: 'Jackie Aina', handle: '@jackieaina', followers: '3.2M', avatar: '💄',
-        niche: 8, audience: 9, engagement: 8, openness: 9,
-        reason: 'Beauty creator championing inclusivity — a core Glossier value. Strong brand deal history and vocal advocate for brands that celebrate diverse skin tones.',
-        badges: ['USA', 'Inclusive Beauty', 'Brand Deals ✓'] },
-      { name: 'Matilda Djerf', handle: '@matildadjerf', followers: '2.8M', avatar: '🌸',
-        niche: 7, audience: 9, engagement: 8, openness: 8,
-        reason: 'Swedish lifestyle creator with a natural, no-makeup aesthetic that mirrors Glossier\'s brand ethos. Strong female 20–30 European audience for international expansion.',
-        badges: ['Europe', 'Lifestyle', 'Natural Aesthetic'] }
-    ]
-  }
-};
-
-function getMockBrand(handle) {
-  const key = handle.toLowerCase().replace('@','');
-  return mockBrands[key] || {
-    fullName: handle.charAt(0).toUpperCase() + handle.slice(1),
-    handle: '@' + handle,
-    avatarChar: handle.charAt(0).toUpperCase(),
-    sells: 'Premium consumer products targeting a lifestyle-focused demographic.',
-    audience: 'Urban millennials aged 22–38, digitally native, aspirational buyers.',
-    tone: 'Clean, confident, modern. Aspirational but approachable.',
-    market: 'South & Southeast Asia, with growing D2C online presence.',
-    story: `${handle.charAt(0).toUpperCase() + handle.slice(1)} has built a loyal following by staying true to its core values of quality, authenticity, and community. With a growing digital-first strategy, the brand is expanding its reach across key markets.`,
-    followers: '284K', engagement: '3.8%', posts: '6', content: 'Reels',
-    badges: ['D2C', 'Lifestyle', 'Growing'],
-    influencers: [
-      { name: 'Meera Nair', handle: '@meeranair', followers: '890K', avatar: '🌿',
-        niche: 9, audience: 8, engagement: 9, openness: 9,
-        reason: 'Lifestyle creator with deeply engaged South Asian audience. Posts feel authentic, not overly commercial — aligns with the brand\'s community-first approach. Media kit linked in bio.',
-        badges: ['India', 'Lifestyle', 'Media Kit ✓'] },
-      { name: 'Priya Sharma', handle: '@priyasharma', followers: '1.2M', avatar: '✨',
-        niche: 8, audience: 9, engagement: 7, openness: 8,
-        reason: 'One of India\'s top fashion & lifestyle voices. Audience skews 24–35 urban female — a strong match. Regularly promotes D2C brands with measurable results.',
-        badges: ['India', 'Fashion', 'Brand Deals ✓'] },
-      { name: 'Ananya Rao', handle: '@ananyarao', followers: '620K', avatar: '🎨',
-        niche: 8, audience: 8, engagement: 9, openness: 9,
-        reason: 'Creative content style stands out in the feed. Micro-influencer engagement rates outperform macro accounts. DM for collabs explicitly in bio — very approachable.',
-        badges: ['India', 'Micro', 'High Engagement'] }
-    ]
-  };
-}
-
-// ─── NAVIGATION ──────────────────────────────────────────
-function goTo(screenNum) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  // Update steps
-  for(let i=1;i<=4;i++){
-    const el = document.getElementById('step'+i);
-    if(!el) continue;
-    el.classList.remove('active','done');
-    if(i < screenNum) el.classList.add('done');
-    else if(i === screenNum) el.classList.add('active');
-  }
-  if(screenNum === 'loading') {
-    document.getElementById('screenLoading').classList.add('active');
-  } else {
-    document.getElementById('screen'+screenNum).classList.add('active');
-  }
-  window.scrollTo({top:0, behavior:'smooth'});
-}
-
-// ─── ANALYZE BRAND ───────────────────────────────────────
-async function analyzeBrand() {
-  const handle = document.getElementById('brandHandle').value.trim().replace('@','');
-  if(!handle) { document.getElementById('brandHandle').focus(); return; }
-  currentHandle = handle;
-
-  document.getElementById('loadingHandle').textContent = handle;
-  goTo('loading');
-
-  // Animate loading steps
-  const steps = ['ls1','ls2','ls3','ls4','ls5'];
-  let i = 0;
-  let apiData = null;
-
-  function nextStep() {
-    if(i > 0) {
-      const prev = document.getElementById(steps[i-1]);
-      prev.classList.remove('active');
-      prev.classList.add('done');
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  const { handle, criteria } = req.body;
+  if (!handle) return res.status(400).json({ error: 'Handle is required' });
+
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  const apifyKey = process.env.APIFY_API_KEY;
+  if (!anthropicKey) return res.status(500).json({ error: 'Anthropic API key not configured' });
+
+  // ─── HELPER: Run Apify actor and wait for result ───────────────────
+  async function runApifyActor(actorId, input, maxWaitMs = 25000) {
+    const runRes = await fetch(
+      `https://api.apify.com/v2/acts/${actorId}/runs?token=${apifyKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input)
+      }
+    );
+    const runData = await runRes.json();
+    const runId = runData?.data?.id;
+    if (!runId) return null;
+
+    const start = Date.now();
+    while (Date.now() - start < maxWaitMs) {
+      await new Promise(r => setTimeout(r, 2500));
+      const statusRes = await fetch(`https://api.apify.com/v2/actor-runs/${runId}?token=${apifyKey}`);
+      const statusData = await statusRes.json();
+      const status = statusData?.data?.status;
+      if (status === 'SUCCEEDED') {
+        const datasetId = statusData?.data?.defaultDatasetId;
+        const resultsRes = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${apifyKey}&limit=20`);
+        return await resultsRes.json();
+      }
+      if (status === 'FAILED' || status === 'ABORTED') return null;
     }
-    if(i < steps.length) {
-      document.getElementById(steps[i]).classList.add('active');
-      i++;
-      setTimeout(nextStep, 900);
-    }
-  }
-  nextStep();
-
-  // Call Claude API in parallel with animation
-  try {
-    const response = await fetch('/api/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ handle, criteria })
-    });
-    const result = await response.json();
-    if(result.error) throw new Error(result.error);
-    apiData = result;
-  } catch(err) {
-    console.error('API error, falling back to mock:', err);
-    apiData = null;
+    return null;
   }
 
-  // Wait for animation to finish then show results
-  const waitTime = Math.max(0, (steps.length * 900) + 400 - 4500);
-  setTimeout(() => showBrandStory(handle, apiData), Math.max(400, waitTime));
-}
-
-function showBrandStory(handle, apiData) {
-  const data = apiData ? apiData.brand : getMockBrand(handle);
-
-  currentBrandData = apiData;
-  document.getElementById('brandName').textContent = data.fullName;
-  document.getElementById('brandSubtitle').textContent = `Here's what Chichang found about @${handle}`;
-  document.getElementById('brandAvatarChar').textContent = data.avatarChar;
-  document.getElementById('brandFullName').textContent = data.fullName;
-  document.getElementById('brandHandleDisplay').textContent = data.handle;
-  document.getElementById('brandSells').textContent = data.sells;
-  document.getElementById('brandAudience').textContent = data.audience;
-  document.getElementById('brandTone').textContent = data.tone;
-  document.getElementById('brandMarket').textContent = data.market;
-  document.getElementById('brandStory').textContent = data.story;
-  document.getElementById('mFollowers').textContent = data.followers;
-  document.getElementById('mEngagement').textContent = data.engagement;
-  document.getElementById('mPosts').textContent = data.posts;
-  document.getElementById('mContent').textContent = data.content;
-
-  const badgesEl = document.getElementById('brandBadges');
-  badgesEl.innerHTML = '';
-  data.badges.forEach((b,i) => {
-    const cls = i===0 ? 'badge-gold' : i===1 ? 'badge-green' : 'badge-neutral';
-    badgesEl.innerHTML += `<span class="badge ${cls}">${b}</span>`;
-  });
-
-  goTo(2);
-}
-
-// ─── FIND INFLUENCERS ────────────────────────────────────
-function findInfluencers() {
-  const data = currentBrandData || getMockBrand(currentHandle);
-  const infs = (currentBrandData && currentBrandData.influencers) ? currentBrandData.influencers : data.influencers;
-  const name = (currentBrandData && currentBrandData.brand) ? currentBrandData.brand.fullName : data.fullName;
-  document.getElementById('inf-brand-name').textContent = name;
-
-  // Show tier + data source badges
-  const tierRow = document.getElementById('tierBadgeRow');
-  if(tierRow) {
-    const tier = currentBrandData?.tier;
-    const source = currentBrandData?.influencerSource;
-    tierRow.innerHTML = '';
-    if(tier) {
-      tierRow.innerHTML += `<span class="badge badge-gold">🎯 ${tier.label} Tier — ${tier.description}</span>`;
-    }
-    if(source === 'live') {
-      tierRow.innerHTML += `<span class="badge badge-green">✅ Live Instagram Data</span>`;
+  // ─── HELPER: Determine influencer size tier from brand followers ────
+  function getInfluencerTier(followerCount) {
+    if (!followerCount || followerCount < 5000) {
+      return { label: 'Nano', min: 500, max: 10000, description: '500–10K followers' };
+    } else if (followerCount < 20000) {
+      return { label: 'Nano-Micro', min: 1000, max: 25000, description: '1K–25K followers' };
+    } else if (followerCount < 75000) {
+      return { label: 'Micro', min: 10000, max: 75000, description: '10K–75K followers' };
+    } else if (followerCount < 250000) {
+      return { label: 'Mid-Tier', min: 50000, max: 250000, description: '50K–250K followers' };
+    } else if (followerCount < 1000000) {
+      return { label: 'Macro', min: 100000, max: 1000000, description: '100K–1M followers' };
     } else {
-      tierRow.innerHTML += `<span class="badge badge-neutral">🧠 AI-Powered Suggestions</span>`;
+      return { label: 'Mega', min: 500000, max: 50000000, description: '500K+ followers' };
     }
   }
 
-  renderInfluencers(infs);
-  goTo(3);
+  // ─── HELPER: Format follower count ─────────────────────────────────
+  function formatFollowers(n) {
+    if (!n) return 'unknown';
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(0) + 'K';
+    return n.toString();
+  }
+
+  // ─── STEP 1: Fetch brand Instagram profile ─────────────────────────
+  let brandProfile = null;
+  let brandHashtags = [];
+
+  if (apifyKey) {
+    try {
+      const results = await runApifyActor('apify~instagram-profile-scraper', {
+        usernames: [handle],
+        resultsLimit: 12
+      }, 25000);
+
+      if (results && results.length > 0) {
+        brandProfile = results[0];
+
+        // Extract hashtags from recent post captions
+        const posts = brandProfile.latestPosts || [];
+        const hashtagSet = new Set();
+        posts.forEach(post => {
+          const caption = post.caption || '';
+          const tags = caption.match(/#\w+/g) || [];
+          tags.forEach(t => hashtagSet.add(t.toLowerCase().replace('#', '')));
+        });
+        brandHashtags = Array.from(hashtagSet).slice(0, 5);
+      }
+    } catch (err) {
+      console.error('Apify brand fetch error:', err);
+    }
+  }
+
+  // ─── STEP 2: Determine influencer size tier ────────────────────────
+  const followerCount = brandProfile?.followersCount || 0;
+  const tier = getInfluencerTier(followerCount);
+
+  // ─── STEP 3: Search for real influencer candidates via hashtags ─────
+  let influencerCandidates = [];
+
+  if (apifyKey && brandHashtags.length > 0) {
+    try {
+      // Search top 3 hashtags for active creators
+      const searchTags = brandHashtags.slice(0, 3);
+      const hashtagResults = await runApifyActor('apify~instagram-hashtag-scraper', {
+        hashtags: searchTags,
+        resultsLimit: 30
+      }, 25000);
+
+      if (hashtagResults && hashtagResults.length > 0) {
+        // Collect unique creator handles from hashtag posts
+        const creatorHandles = new Set();
+        hashtagResults.forEach(post => {
+          if (post.ownerUsername && post.ownerUsername !== handle) {
+            creatorHandles.add(post.ownerUsername);
+          }
+        });
+
+        // Fetch profiles for top creators
+        const handleList = Array.from(creatorHandles).slice(0, 10);
+        if (handleList.length > 0) {
+          const profileResults = await runApifyActor('apify~instagram-profile-scraper', {
+            usernames: handleList,
+            resultsLimit: 1
+          }, 25000);
+
+          if (profileResults && profileResults.length > 0) {
+            // Filter by size tier
+            influencerCandidates = profileResults
+              .filter(p => {
+                const f = p.followersCount || 0;
+                return f >= tier.min && f <= tier.max;
+              })
+              .map(p => {
+                const avgLikes = p.avgLikes || 0;
+                const avgComments = p.avgComments || 0;
+                const followers = p.followersCount || 1;
+                const engRate = ((avgLikes + avgComments) / followers * 100).toFixed(2);
+                return {
+                  handle: p.username,
+                  fullName: p.fullName || p.username,
+                  followers: p.followersCount,
+                  followersFormatted: formatFollowers(p.followersCount),
+                  bio: p.biography || '',
+                  engagementRate: engRate + '%',
+                  avgLikes,
+                  avgComments,
+                  verified: p.verified || false,
+                  category: p.businessCategoryName || '',
+                  website: p.externalUrl || ''
+                };
+              })
+              .slice(0, 8);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Apify influencer search error:', err);
+    }
+  }
+
+  // ─── STEP 4: Build Claude prompt with all real data ─────────────────
+  let brandContext = '';
+  if (brandProfile) {
+    const engRate = followerCount && brandProfile.avgLikes
+      ? ((brandProfile.avgLikes + (brandProfile.avgComments || 0)) / followerCount * 100).toFixed(2) + '%'
+      : 'unknown';
+
+    brandContext = `REAL BRAND DATA (live from Instagram):
+- Handle: @${handle}
+- Full Name: ${brandProfile.fullName || handle}
+- Followers: ${formatFollowers(followerCount)} (${followerCount.toLocaleString()} exact)
+- Bio: ${brandProfile.biography || 'N/A'}
+- Category: ${brandProfile.businessCategoryName || 'N/A'}
+- Website: ${brandProfile.externalUrl || 'N/A'}
+- Verified: ${brandProfile.verified ? 'Yes' : 'No'}
+- Avg Likes/post: ${brandProfile.avgLikes?.toLocaleString() || 'N/A'}
+- Engagement Rate: ${engRate}
+- Top Hashtags used: ${brandHashtags.join(', ') || 'N/A'}`;
+  } else {
+    brandContext = `No live data available. Use training knowledge for @${handle}.`;
+  }
+
+  let candidatesContext = '';
+  if (influencerCandidates.length > 0) {
+    candidatesContext = `\nREAL INFLUENCER CANDIDATES found on Instagram (active in brand's hashtags, sized for this brand):
+${influencerCandidates.map((c, i) => `
+Candidate ${i+1}: @${c.handle}
+- Name: ${c.fullName}
+- Followers: ${c.followersFormatted}
+- Engagement Rate: ${c.engagementRate}
+- Bio: ${c.bio}
+- Category: ${c.category}
+- Website: ${c.website}
+`).join('')}
+You MUST select your top 3 from these real candidates. Do not invent influencers when real candidates are provided.`;
+  } else {
+    candidatesContext = `\nNo live influencer candidates found. Use your knowledge to suggest real micro-influencers in this niche with ${tier.description} followers.`;
+  }
+
+  const criteriaText = criteria && criteria.length > 0
+    ? `\nUSER FILTERS (must match): ${criteria.join(', ')}`
+    : '';
+
+  const prompt = `You are Chichang, an influencer marketing intelligence engine specialising in micro-influencer matching for small brands.
+
+${brandContext}
+${candidatesContext}
+${criteriaText}
+
+INFLUENCER SIZE RULE: This brand has ${formatFollowers(followerCount)} followers. You must ONLY recommend influencers in the ${tier.label} tier (${tier.description}). Do not suggest anyone outside this range. Small brands need authentic, affordable, right-sized influencers — not celebrities.
+
+Generate a brand analysis and select the top 3 best-fit influencers. Respond ONLY with valid JSON, no markdown:
+
+{
+  "brand": {
+    "fullName": "Brand name",
+    "handle": "@${handle}",
+    "avatarChar": "First letter uppercase",
+    "sells": "What they sell in 1-2 sentences",
+    "audience": "Target audience — age, gender, interests, lifestyle",
+    "tone": "Brand tone and content style",
+    "market": "Geographic market and distribution",
+    "story": "2-3 sentence brand story",
+    "followers": "${formatFollowers(followerCount) || 'unknown'}",
+    "engagement": "engagement rate",
+    "posts": "posts per week as number",
+    "content": "Primary format e.g. Reels",
+    "badges": ["Category", "Style", "Market"],
+    "influencerTier": "${tier.label} (${tier.description})"
+  },
+  "influencers": [
+    {
+      "name": "Full name",
+      "handle": "@handle",
+      "followers": "formatted e.g. 12K",
+      "avatar": "single emoji",
+      "niche": 9,
+      "audience": 8,
+      "engagement": 9,
+      "openness": 8,
+      "reason": "2 sentences — why great match for this specific brand, referencing their bio/content if real data available",
+      "badges": ["Region", "Niche", "Signal"]
+    },
+    {
+      "name": "Full name",
+      "handle": "@handle",
+      "followers": "formatted",
+      "avatar": "emoji",
+      "niche": 8,
+      "audience": 8,
+      "engagement": 7,
+      "openness": 9,
+      "reason": "2 sentences",
+      "badges": ["Region", "Niche", "Signal"]
+    },
+    {
+      "name": "Full name",
+      "handle": "@handle",
+      "followers": "formatted",
+      "avatar": "emoji",
+      "niche": 7,
+      "audience": 9,
+      "engagement": 8,
+      "openness": 8,
+      "reason": "2 sentences",
+      "badges": ["Region", "Niche", "Signal"]
+    }
+  ]
 }
 
-const rankLabels = ['#1 Best Match', '#2 Strong Match', '#3 Good Match'];
-const rankColors = ['#c8a951', '#888', '#cd7f32'];
-
-function renderInfluencers(influencers) {
-  const grid = document.getElementById('influencerGrid');
-  grid.innerHTML = '';
-
-  influencers.forEach((inf, idx) => {
-    const total = inf.niche + inf.audience + inf.engagement + inf.openness;
-    const pct = (v) => Math.round((v/10)*100);
-
-    grid.innerHTML += `
-      <div class="inf-card rank-${idx+1}">
-        <div class="inf-rank">${rankLabels[idx]}</div>
-        <div class="inf-card-top">
-          <div class="inf-avatar" style="background:${idx===0?'var(--gold-light)':idx===1?'#f0f0f0':'#fde8d8'}">${inf.avatar}</div>
-          <div class="inf-name">${inf.name}</div>
-          <div class="inf-handle">${inf.handle}</div>
-          <div class="inf-followers">${inf.followers} followers</div>
-          <div class="inf-reach-row">
-            ${inf.badges.map(b => `<span class="badge badge-neutral">${b}</span>`).join('')}
-          </div>
-        </div>
-        <div class="inf-card-scores">
-          ${scoreRow('Niche Match', inf.niche)}
-          ${scoreRow('Audience Fit', inf.audience)}
-          ${scoreRow('Engagement', inf.engagement)}
-          ${scoreRow('Openness', inf.openness)}
-        </div>
-        <div class="inf-total-score">
-          <span class="inf-total-label">Total Score</span>
-          <span class="inf-total-value">${total}<span style="font-size:14px;color:var(--ink-muted)">/40</span></span>
-        </div>
-        <div class="inf-card-reason">
-          <div class="inf-reason-title">Why this match</div>
-          <div class="inf-reason-text">${inf.reason}</div>
-        </div>
-      </div>
-    `;
-  });
-
-  // Animate score bars
-  setTimeout(() => {
-    document.querySelectorAll('.score-bar-fill').forEach(bar => {
-      bar.style.width = bar.dataset.width + '%';
-    });
-  }, 100);
-}
-
-function scoreRow(label, value) {
-  const pct = Math.round((value/10)*100);
-  return `
-    <div class="score-row">
-      <div class="score-label">${label}</div>
-      <div class="score-bar-bg"><div class="score-bar-fill" data-width="${pct}" style="width:0%"></div></div>
-      <div class="score-val">${value}</div>
-    </div>
-  `;
-}
-
-// ─── CRITERIA ────────────────────────────────────────────
-async function addCriteria() {
-  const input = document.getElementById('criteriaInput');
-  const val = input.value.trim();
-  if(!val) return;
-  criteria.push(val);
-  input.value = '';
-  renderCriteria();
-
-  // Re-fetch with new criteria applied
-  const tierRow = document.getElementById('tierBadgeRow');
-  if(tierRow) tierRow.innerHTML = '<span class="badge badge-neutral">🔄 Refining matches...</span>';
+Scoring rules: integers 1-10. If real candidates provided, pick from them. Apply all user filters strictly.`;
 
   try {
-    const response = await fetch('/api/analyze', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ handle: currentHandle, criteria })
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': anthropicKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1500,
+        messages: [{ role: 'user', content: prompt }]
+      })
     });
-    const result = await response.json();
-    if(!result.error) {
-      currentBrandData = result;
-      findInfluencers();
-    }
-  } catch(err) {
-    console.error('Criteria refresh error:', err);
+
+    const data = await response.json();
+    if (!response.ok) return res.status(500).json({ error: data.error?.message || 'Claude API error' });
+
+    const text = data.content[0].text.trim();
+    const clean = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+
+    parsed.dataSource = brandProfile ? 'live' : 'ai';
+    parsed.influencerSource = influencerCandidates.length > 0 ? 'live' : 'ai';
+    parsed.tier = tier;
+
+    return res.status(200).json(parsed);
+  } catch (err) {
+    console.error('Claude error:', err);
+    return res.status(500).json({ error: 'Failed to analyze brand. Please try again.' });
   }
 }
-
-function renderCriteria() {
-  const chips = document.getElementById('criteriaChips');
-  chips.innerHTML = '';
-  criteria.forEach((c, i) => {
-    chips.innerHTML += `
-      <div class="criteria-chip">
-        ${c}
-        <button onclick="removeCriteria(${i})">×</button>
-      </div>
-    `;
-  });
-}
-
-function removeCriteria(i) {
-  criteria.splice(i, 1);
-  renderCriteria();
-}
-
-document.addEventListener('keydown', (e) => {
-  if(e.key === 'Enter' && document.activeElement.id === 'criteriaInput') addCriteria();
-  if(e.key === 'Enter' && document.activeElement.id === 'brandHandle') analyzeBrand();
-});
-
-// ─── TRACKING ────────────────────────────────────────────
-function goToTracking() {
-  renderDefaultPartners();
-  goTo(4);
-}
-
-function renderDefaultPartners() {
-  const data = getMockBrand(currentHandle);
-  partners = data.influencers.slice(0,2).map(i => ({name: i.name, handle: i.handle, avatar: i.avatar}));
-  renderPartners();
-}
-
-function addPartner() {
-  const input = document.getElementById('partnerHandle');
-  const val = input.value.trim().replace('@','');
-  if(!val) return;
-  partners.push({name: val, handle: '@'+val, avatar: '👤'});
-  input.value = '';
-  renderPartners();
-}
-
-function renderPartners() {
-  const chips = document.getElementById('partnerChips');
-  chips.innerHTML = '';
-  partners.forEach(p => {
-    chips.innerHTML += `
-      <div class="partner-chip">
-        <div class="partner-chip-left">
-          <div class="partner-chip-avatar">${p.avatar}</div>
-          <div>
-            <div class="partner-chip-name">${p.name}</div>
-            <div class="partner-chip-handle">${p.handle}</div>
-          </div>
-        </div>
-        <div class="partner-status"><div class="status-dot"></div>Monitoring</div>
-      </div>
-    `;
-  });
-}
-</script>
-</body>
-</html>
