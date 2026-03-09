@@ -307,63 +307,210 @@
   }
 
   /* LOADING */
+  /* ── LOADING EXPERIENCE ─────────────────────────────────── */
   .loading-screen {
     min-height: calc(100vh - 100px);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 24px;
+    padding: 40px 24px;
+    gap: 0;
   }
 
-  .loading-spinner {
-    width: 48px; height: 48px;
-    border: 2px solid var(--line);
-    border-top-color: var(--gold);
+  .loading-brand-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--paper-warm);
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    padding: 6px 16px 6px 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    margin-bottom: 32px;
+  }
+
+  .loading-brand-dot {
+    width: 8px; height: 8px;
     border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+    background: var(--instagram);
+    animation: pulse 1.5s infinite;
+  }
+
+  .loading-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    color: var(--ink);
+    text-align: center;
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+  }
+
+  .loading-sub {
+    font-size: 14px;
+    color: var(--ink-muted);
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  /* Progress track */
+  .progress-track {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+  }
+
+  .progress-track::before {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 20px;
+    bottom: 20px;
+    width: 2px;
+    background: var(--line);
+    z-index: 0;
+  }
+
+  .progress-line-fill {
+    position: absolute;
+    left: 19px;
+    top: 20px;
+    width: 2px;
+    height: 0%;
+    background: linear-gradient(180deg, var(--gold), var(--purple));
+    z-index: 1;
+    transition: height 0.6s ease;
+  }
+
+  .progress-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 12px 0;
+    position: relative;
+    z-index: 2;
+    opacity: 0.35;
+    transition: opacity 0.4s ease;
+  }
+
+  .progress-step.active { opacity: 1; }
+  .progress-step.done { opacity: 1; }
+
+  .progress-step-icon {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--line);
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    transition: all 0.4s ease;
+    position: relative;
+    z-index: 2;
+  }
+
+  .progress-step.active .progress-step-icon {
+    border-color: var(--gold);
+    background: var(--gold-light);
+    box-shadow: 0 0 0 4px rgba(0,128,96,0.1);
+    animation: iconPulse 1.5s infinite;
+  }
+
+  .progress-step.done .progress-step-icon {
+    border-color: var(--gold);
+    background: var(--gold);
+    color: white;
+  }
+
+  @keyframes iconPulse {
+    0%,100% { box-shadow: 0 0 0 4px rgba(0,128,96,0.1); }
+    50% { box-shadow: 0 0 0 8px rgba(0,128,96,0.05); }
+  }
+
+  .progress-step-body {
+    padding-top: 8px;
+    flex: 1;
+  }
+
+  .progress-step-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 2px;
+    transition: color 0.3s;
+  }
+
+  .progress-step.active .progress-step-label { color: var(--gold); }
+
+  .progress-step-sub {
+    font-size: 12px;
+    color: var(--ink-muted);
+    line-height: 1.4;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, opacity 0.3s;
+    opacity: 0;
+  }
+
+  .progress-step.active .progress-step-sub {
+    max-height: 40px;
+    opacity: 1;
+  }
+
+  .progress-step-check {
+    font-size: 14px;
+    margin-left: auto;
+    padding-top: 10px;
+    color: var(--gold);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .progress-step.done .progress-step-check { opacity: 1; }
+
+  /* Fun fact ticker */
+  .loading-fact {
+    margin-top: 40px;
+    max-width: 400px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--ink-muted);
+    line-height: 1.6;
+    padding: 14px 20px;
+    background: var(--paper-warm);
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .loading-fact span {
+    animation: fadeInOut 4s ease infinite;
+  }
+
+  @keyframes fadeInOut {
+    0%,100% { opacity: 0; }
+    10%,90% { opacity: 1; }
   }
 
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  .loading-label {
-    font-size: 13px;
-    color: var(--ink-muted);
-    font-weight: 400;
-    letter-spacing: 0.5px;
-  }
-
-  .loading-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 8px;
-  }
-
-  .loading-step {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 13px;
-    color: var(--ink-muted);
-    opacity: 0;
-    animation: fadeIn 0.4s ease forwards;
-  }
-
-  .loading-step.done { color: var(--green); }
-
-  .loading-step-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--line);
-    flex-shrink: 0;
-  }
-
-  .loading-step.done .loading-step-dot { background: var(--green); }
-  .loading-step.active .loading-step-dot { background: var(--gold); animation: pulse 1s infinite; }
-
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
   @keyframes fadeIn { to { opacity: 1; } }
+
+  @media (max-width: 640px) {
+    .loading-screen { padding: 32px 20px; }
+    .loading-title { font-size: 22px; }
+    .progress-track { max-width: 100%; }
+  }
 
   /* SCREEN 2 — BRAND STORY */
   .page-container {
@@ -1332,23 +1479,82 @@
   <!-- SCREEN LOADING -->
   <div class="screen" id="screenLoading">
     <div class="loading-screen">
-      <div class="loading-spinner"></div>
-      <div style="text-align:center">
-        <div class="loading-label" id="loadingTitle">Analyzing @<span id="loadingHandle"></span></div>
-        <div class="loading-steps" id="loadingSteps">
-          <div class="loading-step active" id="ls1"><div class="loading-step-dot"></div>Opening Instagram profile...</div>
-          <div class="loading-step" id="ls2"><div class="loading-step-dot"></div>Reading posts, captions & hashtags...</div>
-          <div class="loading-step" id="ls3"><div class="loading-step-dot"></div>Building brand profile with AI...</div>
-          <div class="loading-step" id="ls4"><div class="loading-step-dot"></div>Identifying influencer criteria...</div>
-          <div class="loading-step" id="ls5"><div class="loading-step-dot"></div>Searching & scoring top matches...</div>
-        </div>
+
+      <div class="loading-brand-pill">
+        <div class="loading-brand-dot"></div>
+        <span>Analyzing @<strong id="loadingHandle">brand</strong></span>
       </div>
+
+      <div class="loading-title" id="loadingTitle">Reading the brand story...</div>
+      <div class="loading-sub" id="loadingSub">This usually takes 10–30 seconds</div>
+
+      <div class="progress-track">
+        <div class="progress-line-fill" id="progressLineFill"></div>
+
+        <div class="progress-step" id="ps1">
+          <div class="progress-step-icon">🔍</div>
+          <div class="progress-step-body">
+            <div class="progress-step-label">Opening Instagram</div>
+            <div class="progress-step-sub">Visiting @<span class="ps-handle"></span> on Instagram</div>
+          </div>
+          <div class="progress-step-check">✓</div>
+        </div>
+
+        <div class="progress-step" id="ps2">
+          <div class="progress-step-icon">📸</div>
+          <div class="progress-step-body">
+            <div class="progress-step-label">Reading posts & hashtags</div>
+            <div class="progress-step-sub">Scanning captions, engagement and content style</div>
+          </div>
+          <div class="progress-step-check">✓</div>
+        </div>
+
+        <div class="progress-step" id="ps3">
+          <div class="progress-step-icon">🧠</div>
+          <div class="progress-step-body">
+            <div class="progress-step-label">Building brand profile</div>
+            <div class="progress-step-sub">AI analysing audience, tone and market fit</div>
+          </div>
+          <div class="progress-step-check">✓</div>
+        </div>
+
+        <div class="progress-step" id="ps4">
+          <div class="progress-step-icon">🎯</div>
+          <div class="progress-step-body">
+            <div class="progress-step-label">Searching for influencers</div>
+            <div class="progress-step-sub">Scanning Instagram hashtags for real creators</div>
+          </div>
+          <div class="progress-step-check">✓</div>
+        </div>
+
+        <div class="progress-step" id="ps5">
+          <div class="progress-step-icon">⭐</div>
+          <div class="progress-step-body">
+            <div class="progress-step-label">Scoring & ranking matches</div>
+            <div class="progress-step-sub">Matching influencer size, niche and audience fit</div>
+          </div>
+          <div class="progress-step-check">✓</div>
+        </div>
+
+      </div>
+
+      <div class="loading-fact">
+        <span id="loadingFact">💡 Micro-influencers (10K–50K followers) drive 60% higher engagement than mega influencers.</span>
+      </div>
+
     </div>
   </div>
 
   <!-- SCREEN 2: BRAND STORY -->
   <div class="screen" id="screen2">
     <div class="page-container">
+
+      <!-- Influencer loading banner -->
+      <div id="influencerLoadingBanner" style="display:none;align-items:center;gap:12px;background:var(--purple-light);border:1px solid #c5cae9;border-radius:8px;padding:12px 18px;margin-bottom:24px;font-size:13px;color:var(--purple)">
+        <div style="width:16px;height:16px;border:2px solid #c5cae9;border-top-color:var(--purple);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0"></div>
+        <span>Finding the best influencers for this brand in the background...</span>
+      </div>
+
       <div class="page-eyebrow">Brand Analysis</div>
       <h1 class="page-title" id="brandName">Brand Story</h1>
       <p class="page-sub" id="brandSubtitle">Here's what Chichang found</p>
@@ -1666,7 +1872,65 @@ function goTo(screenNum) {
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
-// ─── ANALYZE BRAND ───────────────────────────────────────
+// ─── LOADING PROGRESS CONTROLLER ────────────────────────────
+const facts = [
+  "💡 Micro-influencers (10K–50K) drive 60% higher engagement than mega influencers.",
+  "📊 91% of consumers trust influencer recommendations over traditional ads.",
+  "🎯 Nano-influencers have the highest engagement rates — often 8–10%.",
+  "💰 Small brands see 3–5x better ROI working with micro vs macro influencers.",
+  "🌍 Instagram has over 500K active influencers globally across all niches.",
+  "🤝 Brand-influencer fit matters more than follower count for conversions.",
+  "📱 Reels get 22% more interaction than regular video posts on Instagram.",
+];
+
+let factInterval = null;
+let currentFactIdx = 0;
+
+function startFactRotation() {
+  const el = document.getElementById('loadingFact');
+  if(!el) return;
+  currentFactIdx = 0;
+  el.textContent = facts[0];
+  factInterval = setInterval(() => {
+    currentFactIdx = (currentFactIdx + 1) % facts.length;
+    el.style.opacity = '0';
+    setTimeout(() => {
+      el.textContent = facts[currentFactIdx];
+      el.style.opacity = '1';
+    }, 300);
+  }, 4000);
+}
+
+function stopFactRotation() {
+  if(factInterval) { clearInterval(factInterval); factInterval = null; }
+}
+
+function setProgressStep(stepId, state) {
+  // state: 'active' | 'done' | 'idle'
+  const el = document.getElementById(stepId);
+  if(!el) return;
+  el.classList.remove('active', 'done');
+  if(state === 'active') el.classList.add('active');
+  if(state === 'done') {
+    el.classList.add('done');
+    // Set checkmark icon
+    el.querySelector('.progress-step-icon').textContent = '✓';
+  }
+  // Update progress line
+  const steps = ['ps1','ps2','ps3','ps4','ps5'];
+  const doneCount = steps.filter(s => document.getElementById(s)?.classList.contains('done')).length;
+  const fill = document.getElementById('progressLineFill');
+  if(fill) fill.style.height = (doneCount / (steps.length - 1) * 85) + '%';
+}
+
+function setLoadingTitle(title, sub) {
+  const t = document.getElementById('loadingTitle');
+  const s = document.getElementById('loadingSub');
+  if(t) { t.style.opacity='0'; setTimeout(()=>{ t.textContent=title; t.style.opacity='1'; }, 200); }
+  if(s && sub) s.textContent = sub;
+}
+
+// ─── ANALYZE BRAND — SPLIT INTO 2 CALLS ──────────────────
 async function analyzeBrand() {
   const handle = document.getElementById('brandHandle').value.trim().replace('@','');
   if(!handle) { document.getElementById('brandHandle').focus(); return; }
@@ -1675,46 +1939,111 @@ async function analyzeBrand() {
   criteria = [];
   renderCriteria();
 
-  document.getElementById('loadingHandle').textContent = handle;
+  // Set handle display
+  document.querySelectorAll('#loadingHandle, .ps-handle').forEach(el => el.textContent = handle);
   goTo('loading');
+  startFactRotation();
 
-  // Animate loading steps
-  const steps = ['ls1','ls2','ls3','ls4','ls5'];
-  let i = 0;
-  let apiData = null;
-
-  function nextStep() {
-    if(i > 0) {
-      const prev = document.getElementById(steps[i-1]);
-      prev.classList.remove('active');
-      prev.classList.add('done');
+  // Reset all steps
+  ['ps1','ps2','ps3','ps4','ps5'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) {
+      el.classList.remove('active','done');
+      const icon = el.querySelector('.progress-step-icon');
+      const icons = { ps1:'🔍', ps2:'📸', ps3:'🧠', ps4:'🎯', ps5:'⭐' };
+      if(icon) icon.textContent = icons[id];
     }
-    if(i < steps.length) {
-      document.getElementById(steps[i]).classList.add('active');
-      i++;
-      setTimeout(nextStep, 900);
-    }
-  }
-  nextStep();
+  });
+  const fill = document.getElementById('progressLineFill');
+  if(fill) fill.style.height = '0%';
 
-  // Call Claude API in parallel with animation
+  // ── PHASE 1: Brand analysis (fast ~10s) ──────────────────
+  setProgressStep('ps1', 'active');
+  setLoadingTitle('Opening Instagram...', 'Visiting @' + handle);
+
+  let brandResult = null;
   try {
-    const response = await fetch('/api/analyze', {
+    // Simulate step transitions while waiting
+    const stepTimer1 = setTimeout(() => {
+      setProgressStep('ps1', 'done');
+      setProgressStep('ps2', 'active');
+      setLoadingTitle('Reading posts & hashtags...', 'Scanning content and engagement');
+    }, 3000);
+
+    const stepTimer2 = setTimeout(() => {
+      setProgressStep('ps2', 'done');
+      setProgressStep('ps3', 'active');
+      setLoadingTitle('Building brand profile...', 'AI is analysing the brand story');
+    }, 7000);
+
+    const response = await fetch('/api/brand', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ handle, criteria })
+      body: JSON.stringify({ handle })
     });
-    const result = await response.json();
-    if(result.error) throw new Error(result.error);
-    apiData = result;
+    clearTimeout(stepTimer1);
+    clearTimeout(stepTimer2);
+
+    brandResult = await response.json();
+    if(brandResult.error) throw new Error(brandResult.error);
+
+    // Mark phase 1 done
+    setProgressStep('ps1', 'done');
+    setProgressStep('ps2', 'done');
+    setProgressStep('ps3', 'done');
+    setLoadingTitle('Brand found! ✓', 'Now searching for influencers...');
+
+    // Show brand story immediately
+    showBrandStory(handle, { brand: brandResult.brand });
+
   } catch(err) {
-    console.error('API error, falling back to mock:', err);
-    apiData = null;
+    console.error('Brand API error:', err);
+    setProgressStep('ps1', 'done');
+    setProgressStep('ps2', 'done');
+    setProgressStep('ps3', 'done');
+    showBrandStory(handle, null);
   }
 
-  // Wait for animation to finish then show results
-  const waitTime = Math.max(0, (steps.length * 900) + 400 - 4500);
-  setTimeout(() => showBrandStory(handle, apiData), Math.max(400, waitTime));
+  // ── PHASE 2: Influencer search (background, ~20s) ─────────
+  setProgressStep('ps4', 'active');
+  setLoadingTitle('Searching Instagram for influencers...', 'Finding right-sized creators in this niche');
+
+  // Show brand screen while this runs in background
+  goTo(2);
+  stopFactRotation();
+
+  // Show a subtle banner on brand screen that influencers are loading
+  const loadingBanner = document.getElementById('influencerLoadingBanner');
+  if(loadingBanner) loadingBanner.style.display = 'flex';
+
+  try {
+    const stepTimer3 = setTimeout(() => {
+      setProgressStep('ps4', 'done');
+      setProgressStep('ps5', 'active');
+    }, 8000);
+
+    const response = await fetch('/api/influencers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ handle, brandData: brandResult, criteria })
+    });
+    clearTimeout(stepTimer3);
+
+    const result = await response.json();
+    if(!result.error) {
+      currentBrandData = { ...brandResult, ...result };
+      setProgressStep('ps4', 'done');
+      setProgressStep('ps5', 'done');
+
+      // Update banner to show ready
+      if(loadingBanner) {
+        loadingBanner.innerHTML = `<span style="color:var(--gold);font-weight:600">✓ Influencers ready!</span> <button onclick="findInfluencers()" style="margin-left:12px;background:var(--gold);color:white;border:none;padding:8px 18px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer">View Matches →</button>`;
+      }
+    }
+  } catch(err) {
+    console.error('Influencer API error:', err);
+    if(loadingBanner) loadingBanner.style.display = 'none';
+  }
 }
 
 function showBrandStory(handle, apiData) {
