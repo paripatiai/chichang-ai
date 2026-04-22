@@ -1,0 +1,228 @@
+/* =========================================================
+   CHICHANG.AI — Colors & Type CSS Variables
+   Source: paripatiai/chichang-ai (index.html)
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+/* ─── BASE COLOR TOKENS ─────────────────────────────────── */
+:root {
+  /* Ink (text) */
+  --ink:          #1a1a2e;   /* Primary text — deep navy-black */
+  --ink-soft:     #4a4a6a;   /* Secondary text */
+  --ink-muted:    #8a8aaa;   /* Captions, placeholders, labels */
+
+  /* Paper (backgrounds) */
+  --paper:        #ffffff;   /* Primary background */
+  --paper-warm:   #f6f6f7;   /* Secondary background, table fills */
+
+  /* Brand (teal-green — aliased "gold" in codebase) */
+  --brand:        #008060;   /* Primary accent — buttons, highlights */
+  --brand-light:  #d4edda;   /* Tinted background for brand elements */
+  --brand-dark:   #004c3f;   /* Hover state */
+
+  /* Aliases for codebase compatibility */
+  --gold:         #008060;
+  --gold-light:   #d4edda;
+  --gold-dark:    #004c3f;
+
+  /* Border */
+  --line:         #e3e5e8;   /* Dividers, borders */
+
+  /* Secondary accent */
+  --purple:       #5c6ac4;   /* AI states, eyebrows, secondary CTAs */
+  --purple-light: #f0f1ff;   /* Purple tinted backgrounds */
+
+  /* Semantic */
+  --green:        #008060;   /* Success (same as brand) */
+  --green-light:  #d4edda;
+  --red:          #d82c0d;   /* Error, destructive */
+  --red-light:    #fff4f4;
+
+  /* Social */
+  --instagram:    #e1306c;   /* Instagram brand color */
+}
+
+/* ─── SEMANTIC COLOR TOKENS ─────────────────────────────── */
+:root {
+  --color-text-primary:    var(--ink);
+  --color-text-secondary:  var(--ink-soft);
+  --color-text-muted:      var(--ink-muted);
+  --color-text-inverse:    var(--paper);
+  --color-text-brand:      var(--brand);
+  --color-text-accent:     var(--purple);
+
+  --color-bg-primary:      var(--paper);
+  --color-bg-secondary:    var(--paper-warm);
+  --color-bg-brand:        var(--brand);
+  --color-bg-brand-subtle: var(--brand-light);
+  --color-bg-accent-subtle:var(--purple-light);
+
+  --color-border:          var(--line);
+  --color-border-brand:    var(--brand);
+  --color-border-accent:   var(--purple);
+
+  --color-success:         var(--green);
+  --color-success-subtle:  var(--green-light);
+  --color-error:           var(--red);
+  --color-error-subtle:    var(--red-light);
+}
+
+/* ─── TYPOGRAPHY FOUNDATIONS ────────────────────────────── */
+:root {
+  /* Font families */
+  --font-display:   'Playfair Display', Georgia, serif;
+  --font-body:      'Inter', system-ui, sans-serif;
+  --font-ui:        'DM Sans', 'Inter', system-ui, sans-serif;
+
+  /* Font weights */
+  --fw-light:   300;
+  --fw-regular: 400;
+  --fw-medium:  500;
+  --fw-semibold: 600;
+  --fw-bold:    700;
+
+  /* Type scale */
+  --text-hero:    clamp(38px, 5vw, 64px);  /* Hero headline */
+  --text-h1:      36px;                    /* Page title */
+  --text-h2:      28px;                    /* Section heading */
+  --text-h3:      22px;                    /* Sub-section title */
+  --text-h4:      18px;                    /* Card title */
+  --text-h5:      16px;                    /* Small heading */
+  --text-body-lg: 17px;                    /* Hero sub */
+  --text-body:    15px;                    /* Body copy */
+  --text-body-sm: 14px;                    /* Small body */
+  --text-ui:      13px;                    /* UI labels */
+  --text-label:   12px;                    /* Captions, chip text */
+  --text-eyebrow: 11px;                    /* Eyebrows — always uppercase */
+  --text-micro:   10px;                    /* Tiny labels */
+
+  /* Line heights */
+  --lh-tight:  1.1;
+  --lh-snug:   1.3;
+  --lh-normal: 1.5;
+  --lh-relaxed: 1.6;
+  --lh-loose:  1.8;
+
+  /* Letter spacing */
+  --ls-tight:  -1px;
+  --ls-normal: 0;
+  --ls-wide:   0.5px;
+  --ls-wider:  1px;
+  --ls-widest: 2px;
+}
+
+/* ─── SEMANTIC TYPE TOKENS ──────────────────────────────── */
+:root {
+  /* Display */
+  --type-hero:    var(--fw-bold) var(--text-hero)/var(--lh-tight) var(--font-display);
+  --type-h1:      var(--fw-bold) var(--text-h1)/var(--lh-tight) var(--font-display);
+  --type-h2:      var(--fw-bold) var(--text-h2)/var(--lh-snug) var(--font-display);
+  --type-h3:      var(--fw-bold) var(--text-h3)/var(--lh-snug) var(--font-display);
+  --type-h4:      var(--fw-bold) var(--text-h4)/var(--lh-snug) var(--font-display);
+
+  /* Body */
+  --type-body-lg:  var(--fw-light) var(--text-body-lg)/var(--lh-relaxed) var(--font-body);
+  --type-body:     var(--fw-regular) var(--text-body)/var(--lh-relaxed) var(--font-body);
+  --type-body-sm:  var(--fw-regular) var(--text-body-sm)/var(--lh-normal) var(--font-body);
+
+  /* UI */
+  --type-ui:       var(--fw-medium) var(--text-ui)/var(--lh-normal) var(--font-body);
+  --type-label:    var(--fw-medium) var(--text-label)/var(--lh-normal) var(--font-body);
+  --type-eyebrow:  var(--fw-semibold) var(--text-eyebrow)/var(--lh-normal) var(--font-body);
+  --type-caption:  var(--fw-regular) var(--text-eyebrow)/var(--lh-normal) var(--font-body);
+}
+
+/* ─── SPACING TOKENS ────────────────────────────────────── */
+:root {
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-8:   32px;
+  --space-10:  40px;
+  --space-12:  48px;
+  --space-15:  60px;
+  --space-20:  80px;
+}
+
+/* ─── BORDER RADIUS TOKENS ──────────────────────────────── */
+:root {
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   8px;
+  --radius-xl:   12px;
+  --radius-pill: 100px;
+  --radius-full: 50%;
+}
+
+/* ─── SHADOW TOKENS ─────────────────────────────────────── */
+:root {
+  --shadow-none:   none;
+  --shadow-card:   0 2px 8px rgba(0,0,0,0.06);
+  --shadow-lift:   0 8px 32px rgba(0,0,0,0.08);         /* Card hover */
+  --shadow-brand:  0 4px 20px rgba(0,128,96,0.10);       /* Rank-1 card */
+  --shadow-focus:  0 4px 32px rgba(0,128,96,0.15);       /* Input focus */
+  --shadow-btn:    0 4px 12px rgba(0,128,96,0.30);       /* Brand button hover */
+}
+
+/* ─── TRANSITIONS ───────────────────────────────────────── */
+:root {
+  --transition-fast:   0.15s ease;
+  --transition-base:   0.20s ease;
+  --transition-slow:   0.40s ease;
+  --transition-score:  1s ease;   /* Score bar fills */
+}
+
+/* ─── UTILITY CLASSES ───────────────────────────────────── */
+
+/* Text */
+.t-display  { font: var(--type-h1); letter-spacing: var(--ls-tight); color: var(--color-text-primary); }
+.t-h2       { font: var(--type-h2); color: var(--color-text-primary); }
+.t-h3       { font: var(--type-h3); color: var(--color-text-primary); }
+.t-body     { font: var(--type-body); color: var(--color-text-secondary); }
+.t-label    { font: var(--type-label); color: var(--color-text-muted); }
+.t-eyebrow  {
+  font: var(--type-eyebrow);
+  letter-spacing: var(--ls-widest);
+  text-transform: uppercase;
+  color: var(--purple);
+}
+.t-muted    { color: var(--color-text-muted); }
+.t-brand    { color: var(--brand); }
+.t-italic   { font-style: italic; }
+
+/* Buttons */
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--brand); color: white; border: none;
+  padding: 14px 28px;
+  font-family: var(--font-body); font-size: var(--text-body-sm); font-weight: var(--fw-semibold);
+  border-radius: var(--radius-md); cursor: pointer;
+  transition: background var(--transition-base), box-shadow var(--transition-base);
+}
+.btn-primary:hover { background: var(--brand-dark); box-shadow: var(--shadow-btn); }
+
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: transparent; color: var(--ink-soft);
+  border: 1px solid var(--line); padding: 14px 28px;
+  font-family: var(--font-body); font-size: var(--text-body-sm); font-weight: var(--fw-medium);
+  border-radius: var(--radius-md); cursor: pointer;
+  transition: border-color var(--transition-base), color var(--transition-base);
+}
+.btn-secondary:hover { border-color: var(--ink-soft); color: var(--ink); }
+
+/* Badges */
+.badge {
+  display: inline-flex; align-items: center;
+  font-size: var(--text-eyebrow); font-weight: var(--fw-medium);
+  padding: 4px 12px; border-radius: var(--radius-pill);
+  letter-spacing: 0.3px;
+}
+.badge-brand   { background: var(--brand-light);  color: var(--brand-dark); }
+.badge-accent  { background: var(--purple-light); color: var(--purple); }
+.badge-neutral { background: var(--paper-warm);   color: var(--ink-soft); }
+.badge-error   { background: var(--red-light);    color: var(--red); }

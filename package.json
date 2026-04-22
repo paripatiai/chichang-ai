@@ -1,0 +1,21 @@
+{
+  "name": "chichang-ai",
+  "version": "1.0.0",
+  "description": "Chichang.ai — Influencer Intelligence Platform for Shopify × Instagram brands",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.20.0",
+    "@supabase/supabase-js": "^2.39.0",
+    "stripe": "^14.0.0"
+  },
+  "devDependencies": {
+    "vercel": "^33.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
