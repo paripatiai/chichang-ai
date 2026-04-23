@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   if (!handle) return res.status(400).json({ error: 'Handle required' });
 
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  const apifyKey = process.env.APIFY_API_KEY;
+  const apifyKey = process.env.APIFY_API_TOKEN || process.env.APIFY_API_KEY;
 
   // ── Fetch real Instagram profile ────────────────────────────────
   let brandProfile = null;

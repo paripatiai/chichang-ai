@@ -7,7 +7,7 @@ export default async function handler(req, res) {
 
   const { handle, brandData, criteria } = req.body;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  const apifyKey = process.env.APIFY_API_KEY;
+  const apifyKey = process.env.APIFY_API_TOKEN || process.env.APIFY_API_KEY;
 
   const fc = brandData?.meta?.followers || 0;
   const hashtags = brandData?.meta?.hashtags || [];
