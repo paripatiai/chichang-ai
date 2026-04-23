@@ -2130,8 +2130,8 @@ async function analyzeBrand() {
     setProgressStep('ps3', 'done');
     setLoadingTitle('Brand found! ✓', 'Now searching for influencers...');
 
-    // Show brand story immediately
-    showBrandStory(handle, { brand: brandResult.brand });
+    // Show brand story immediately — pass full brandResult so rawProfile is cached
+    showBrandStory(handle, brandResult);
 
   } catch(err) {
     console.error('Brand API error:', err);
@@ -2376,10 +2376,13 @@ function showInfluencerScreen() {
     if(data?.tier) tierRow.innerHTML += `<span class="badge badge-gold">🎯 ${data.tier.label} Tier — ${data.tier.desc || data.tier.description}</span>`;
     tierRow.innerHTML += data?.influencerSource === 'live'
       ? `<span class="badge badge-green">✅ Live Instagram Data</span>`
-      : `<span class="badge badge-neutral">🧠 AI-Powered Suggestions</span>`;
+      : data?.influencerSource === 'none'
+        ? `<span class="badge badge-neutral">⚠ No live matches</span>`
+        : `<span class="badge badge-neutral">🧠 AI-Powered Suggestions</span>`;
   }
 
   if(infs) renderInfluencers(infs);
+  showMatchMessage(data || {});
   goTo(3);
 }
 
@@ -2482,27 +2485,55 @@ async function refreshInfluencers() {
     const response = await fetch('/api/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ handle: currentHandle, criteria })
+      body: JSON.stringify({
+        handle: currentHandle,
+        criteria,
+        brandData: currentBrandData   // send cached rawProfile to skip re-scrape
+      })
     });
     const result = await response.json();
     if(!result.error) {
-      currentBrandData = result;
-      const infs = result.influencers;
+      // Preserve prior brand + rawProfile so next refresh stays fast
+      currentBrandData = { ...currentBrandData, ...result };
+      const infs = result.influencers || [];
       renderInfluencers(infs);
-      // Update tier badges
+      showMatchMessage(result);
+
       const tierRow = document.getElementById('tierBadgeRow');
       if(tierRow && result.tier) {
         tierRow.innerHTML = '';
         tierRow.innerHTML += `<span class="badge badge-gold">🎯 ${result.tier.label} Tier — ${result.tier.description}</span>`;
         tierRow.innerHTML += result.influencerSource === 'live'
           ? `<span class="badge badge-green">✅ Live Instagram Data</span>`
-          : `<span class="badge badge-neutral">🧠 AI-Powered Suggestions</span>`;
+          : result.influencerSource === 'none'
+            ? `<span class="badge badge-neutral">⚠ No live matches</span>`
+            : `<span class="badge badge-neutral">🧠 AI-Powered Suggestions</span>`;
       }
     }
   } catch(err) {
     console.error('Criteria refresh error:', err);
   } finally {
     hideInfluencerOverlay();
+  }
+}
+
+function showMatchMessage(result) {
+  let el = document.getElementById('matchMessage');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'matchMessage';
+    el.style.cssText = 'margin:16px 0;padding:14px 18px;border-radius:10px;font-size:14px;line-height:1.5';
+    const grid = document.getElementById('influencerGrid');
+    if (grid && grid.parentNode) grid.parentNode.insertBefore(el, grid);
+  }
+  if (result.needMoreData && result.message) {
+    el.style.background = 'var(--red-light)';
+    el.style.color = 'var(--red)';
+    el.style.border = '1px solid var(--red)';
+    el.textContent = result.message;
+    el.style.display = 'block';
+  } else {
+    el.style.display = 'none';
   }
 }
 

@@ -121,6 +121,7 @@ Return ONLY valid JSON (no markdown):
 
     return res.status(200).json({
       brand,
+      rawProfile: brandProfile,
       meta: { followers: fc, hashtags: brandHashtags, hasRealData: !!brandProfile }
     });
   } catch(e) {
