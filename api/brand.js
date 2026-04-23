@@ -1,3 +1,5 @@
+import { getSupabase } from '../lib/supabase.js';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -9,7 +11,7 @@ export default async function handler(req, res) {
   if (!handle) return res.status(400).json({ error: 'Handle required' });
 
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  const apifyKey = process.env.APIFY_API_KEY;
+  const apifyKey = process.env.APIFY_API_TOKEN || process.env.APIFY_API_KEY;
 
   // ── Fetch real Instagram profile ────────────────────────────────
   let brandProfile = null;
@@ -96,11 +98,34 @@ Return ONLY valid JSON (no markdown):
     });
     const d = await r.json();
     const brand = JSON.parse(d.content[0].text.replace(/```json|```/g,'').trim());
+
+    // ── Persist to Supabase ────────────────────────────────────────
+    const supabase = getSupabase();
+    if (supabase) {
+      await supabase.from('brand_analyses').insert({
+        handle,
+        full_name:   brand.fullName,
+        bio:         brandProfile?.biography || null,
+        followers:   fc || null,
+        engagement:  engRate || null,
+        niche:       brandProfile?.businessCategoryName || null,
+        hashtags:    brandHashtags,
+        sells:       brand.sells,
+        audience:    brand.audience,
+        tone:        brand.tone,
+        market:      brand.market,
+        story:       brand.story,
+        data_source: brandProfile ? 'live' : 'ai'
+      }).throwOnError();
+    }
+
     return res.status(200).json({
       brand,
+      rawProfile: brandProfile,
       meta: { followers: fc, hashtags: brandHashtags, hasRealData: !!brandProfile }
     });
   } catch(e) {
+    console.error('Brand handler error:', e);
     return res.status(500).json({ error: 'Brand analysis failed' });
   }
 }
