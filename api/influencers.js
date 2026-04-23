@@ -1,3 +1,5 @@
+import { getSupabase } from '../lib/supabase.js';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -131,6 +133,37 @@ Return ONLY valid JSON (no markdown):
     });
     const d = await r.json();
     const parsed = JSON.parse(d.content[0].text.replace(/```json|```/g,'').trim());
+
+    // ── Persist to Supabase ────────────────────────────────────────
+    const supabase = getSupabase();
+    if (supabase) {
+      const { data: searchRow } = await supabase.from('influencer_searches').insert({
+        brand_handle:      handle,
+        criteria:          criteria || [],
+        search_keywords:   keywords,
+        influencer_tier:   tier.label,
+        influencer_source: candidates.length > 0 ? 'live' : 'ai'
+      }).select('id').single();
+
+      if (searchRow?.id && parsed.influencers?.length) {
+        const rows = parsed.influencers.map((inf, i) => ({
+          search_id:        searchRow.id,
+          brand_handle:     handle,
+          handle:           inf.handle.replace('@',''),
+          full_name:        inf.name,
+          followers:        inf.followers,
+          niche_score:      inf.niche,
+          audience_score:   inf.audience,
+          engagement_score: inf.engagement,
+          openness_score:   inf.openness,
+          reason:           inf.reason,
+          badges:           inf.badges || [],
+          rank:             i + 1
+        }));
+        await supabase.from('influencer_matches').insert(rows);
+      }
+    }
+
     return res.status(200).json({
       influencers: parsed.influencers,
       tier,
@@ -138,6 +171,7 @@ Return ONLY valid JSON (no markdown):
       searchKeywords: keywords
     });
   } catch(e) {
+    console.error('Influencer handler error:', e);
     return res.status(500).json({ error: 'Influencer search failed' });
   }
 }

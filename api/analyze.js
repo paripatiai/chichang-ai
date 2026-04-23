@@ -1,3 +1,5 @@
+import { getSupabase } from '../lib/supabase.js';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -397,6 +399,36 @@ Pick the best 3 and return ONLY valid JSON:
     parsed.influencerSource = allCandidates.length > 0 ? 'live' : 'ai';
     parsed.tier = tier;
     parsed.searchKeywords = searchKeywords;
+
+    // ── Persist to Supabase ──────────────────────────────────────
+    const supabase = getSupabase();
+    if (supabase) {
+      const { data: searchRow } = await supabase.from('influencer_searches').insert({
+        brand_handle:      handle,
+        criteria:          criteria || [],
+        search_keywords:   searchKeywords,
+        influencer_tier:   tier.label,
+        influencer_source: allCandidates.length > 0 ? 'live' : 'ai'
+      }).select('id').single();
+
+      if (searchRow?.id && parsed.influencers?.length) {
+        const rows = parsed.influencers.map((inf, i) => ({
+          search_id:        searchRow.id,
+          brand_handle:     handle,
+          handle:           inf.handle.replace('@',''),
+          full_name:        inf.name,
+          followers:        inf.followers,
+          niche_score:      inf.niche,
+          audience_score:   inf.audience,
+          engagement_score: inf.engagement,
+          openness_score:   inf.openness,
+          reason:           inf.reason,
+          badges:           inf.badges || [],
+          rank:             i + 1
+        }));
+        await supabase.from('influencer_matches').insert(rows);
+      }
+    }
 
     return res.status(200).json(parsed);
   } catch (err) {
