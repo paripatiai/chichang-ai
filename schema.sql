@@ -84,6 +84,13 @@ CREATE TABLE IF NOT EXISTS payments (
 CREATE INDEX IF NOT EXISTS payments_handle_idx   ON payments (brand_handle);
 CREATE INDEX IF NOT EXISTS payments_session_idx  ON payments (stripe_session_id);
 
+-- ─── Waitlist ────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS waitlist (
+  id         uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  email      text        UNIQUE NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
 -- ─── Row-level security (public read-only; writes only from service key) ─────
 ALTER TABLE brand_analyses      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE influencer_searches ENABLE ROW LEVEL SECURITY;
