@@ -1,4 +1,5 @@
 import { getSupabase } from '../lib/supabase.js';
+import { fetchWebsiteContent } from '../lib/influencer-pipeline.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -52,6 +53,11 @@ export default async function handler(req, res) {
     } catch(e) { console.error('Apify error:', e); }
   }
 
+  // Fetch website if linked in bio — enriches brand story with product/service details
+  const websiteText = brandProfile?.externalUrl
+    ? await fetchWebsiteContent(brandProfile.externalUrl)
+    : null;
+
   const fc = brandProfile?.followersCount || 0;
   function fmt(n) {
     if(!n) return 'unknown';
@@ -66,7 +72,7 @@ export default async function handler(req, res) {
 
   // ── Ask Claude to generate brand story ──────────────────────────
   const context = brandProfile
-    ? `REAL DATA: Name: ${brandProfile.fullName||handle}, Followers: ${fmt(fc)}, Bio: ${brandProfile.biography||'N/A'}, Category: ${brandProfile.businessCategoryName||'N/A'}, Engagement: ${engRate||'N/A'}, Hashtags: ${brandHashtags.join(', ')}`
+    ? `REAL DATA: Name: ${brandProfile.fullName||handle}, Followers: ${fmt(fc)}, Bio: ${brandProfile.biography||'N/A'}, Category: ${brandProfile.businessCategoryName||'N/A'}, Engagement: ${engRate||'N/A'}, Hashtags: ${brandHashtags.join(', ')}${websiteText ? `, Website content: ${websiteText.slice(0, 600)}` : ''}`
     : `No live data. Use training knowledge for @${handle}.`;
 
   const prompt = `${context}
